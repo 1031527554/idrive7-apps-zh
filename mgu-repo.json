@@ -1,0 +1,669 @@
+{
+  "schema": 1,
+  "components": [
+    {
+      "id": "brake_test",
+      "kind": "app",
+      "path": "apps/brake_test",
+      "manifest": "app.json",
+      "title": "Brake Test",
+      "description": "100-0 and 200-0 braking distance, peak decel and brake-fade tracking",
+      "texts": {
+        "zh-CN": {
+          "title": "制动测试",
+          "description": "100–0 与 200–0 制动距离、峰值减速度，以及制动热衰退跟踪"
+        }
+      },
+      "mguHmi": [
+        "ID7"
+      ],
+      "requires": {
+        "idrive7-renderd": "2.1.7",
+        "mgu-inputgate": "1.0.0"
+      },
+      "build": {
+        "python": "kit/tools/build.py",
+        "args": [
+          "{id}",
+          "--language",
+          "zh-CN"
+        ],
+        "sdk": "oap-sdk",
+        "output": "dist/{id}@{version}.tgz",
+        "network": [
+          "doom"
+        ],
+        "shared": [
+          "kit/runtime",
+          "kit/platform",
+          "kit/localization",
+          "kit/tools/build.py",
+          "kit/tools/pack_data.py",
+          "kit/tools/localize.py",
+          "kit/tools/locale-revisions.json",
+          "kit/tools/oapgen",
+          "oap-sdk"
+        ]
+      }
+    },
+    {
+      "id": "car_vitals",
+      "kind": "app",
+      "path": "apps/car_vitals",
+      "manifest": "app.json",
+      "title": "M Vitals",
+      "description": "Live engine, thermal, intake / fuel / ignition, tyre and chassis gauges",
+      "texts": {
+        "zh-CN": {
+          "title": "M 车辆仪表",
+          "description": "实时发动机、热管理、进气/燃油/点火、轮胎与底盘仪表"
+        }
+      },
+      "mguHmi": [
+        "ID7"
+      ],
+      "requires": {
+        "idrive7-renderd": "2.1.7",
+        "mgu-inputgate": "1.0.0"
+      },
+      "build": {
+        "python": "kit/tools/build.py",
+        "args": [
+          "{id}",
+          "--language",
+          "zh-CN"
+        ],
+        "sdk": "oap-sdk",
+        "output": "dist/{id}@{version}.tgz",
+        "network": [
+          "doom"
+        ],
+        "shared": [
+          "kit/runtime",
+          "kit/platform",
+          "kit/localization",
+          "kit/tools/build.py",
+          "kit/tools/pack_data.py",
+          "kit/tools/localize.py",
+          "kit/tools/locale-revisions.json",
+          "kit/tools/oapgen",
+          "oap-sdk"
+        ]
+      }
+    },
+    {
+      "id": "doom",
+      "kind": "app",
+      "path": "apps/doom",
+      "manifest": "app.json",
+      "title": "Doom",
+      "description": "Doom (Freedoom: Phase 1) on the iDrive. Main menu with all settings; the game drawn in full resolution across the whole screen, on the controller; BACK returns to the menu and saves",
+      "texts": {
+        "zh-CN": {
+          "title": "毁灭战士",
+          "description": "在 iDrive 上运行 Doom（Freedoom：第一章）。主菜单含全部设置；游戏以全屏完整分辨率绘制，用 iDrive 控制器操作；BACK 返回菜单并保存进度"
+        }
+      },
+      "mguHmi": [
+        "ID7"
+      ],
+      "requires": {
+        "idrive7-renderd": "2.1.7",
+        "mgu-inputgate": "1.0.0"
+      },
+      "build": {
+        "python": "kit/tools/build.py",
+        "args": [
+          "{id}",
+          "--language",
+          "zh-CN"
+        ],
+        "sdk": "oap-sdk",
+        "output": "dist/{id}@{version}.tgz",
+        "network": [
+          "doom"
+        ],
+        "shared": [
+          "kit/runtime",
+          "kit/platform",
+          "kit/localization",
+          "kit/tools/build.py",
+          "kit/tools/pack_data.py",
+          "kit/tools/localize.py",
+          "kit/tools/locale-revisions.json",
+          "kit/tools/oapgen",
+          "oap-sdk"
+        ]
+      }
+    },
+    {
+      "id": "draggy",
+      "kind": "app",
+      "path": "apps/draggy",
+      "manifest": "app.json",
+      "title": "Drag Timer",
+      "description": "0-100, 100-200 and 1/4 mile timer with best times",
+      "texts": {
+        "zh-CN": {
+          "title": "加速计时",
+          "description": "0–100、100–200 与 1/4 英里计时，并记录最佳成绩"
+        }
+      },
+      "mguHmi": [
+        "ID7"
+      ],
+      "requires": {
+        "idrive7-renderd": "2.1.7",
+        "mgu-inputgate": "1.0.0"
+      },
+      "build": {
+        "python": "kit/tools/build.py",
+        "args": [
+          "{id}",
+          "--language",
+          "zh-CN"
+        ],
+        "sdk": "oap-sdk",
+        "output": "dist/{id}@{version}.tgz",
+        "network": [
+          "doom"
+        ],
+        "shared": [
+          "kit/runtime",
+          "kit/platform",
+          "kit/localization",
+          "kit/tools/build.py",
+          "kit/tools/pack_data.py",
+          "kit/tools/localize.py",
+          "kit/tools/locale-revisions.json",
+          "kit/tools/oapgen",
+          "oap-sdk"
+        ]
+      }
+    },
+    {
+      "id": "dtc_scanner",
+      "kind": "app",
+      "path": "apps/dtc_scanner",
+      "manifest": "app.json",
+      "title": "Fault Scanner",
+      "description": "Read and clear fault memory of every control unit, plus active Check Control messages",
+      "texts": {
+        "zh-CN": {
+          "title": "故障检测",
+          "description": "读取并清除各控制单元的故障存储，并显示当前 Check Control 提示信息"
+        }
+      },
+      "mguHmi": [
+        "ID7"
+      ],
+      "requires": {
+        "idrive7-renderd": "2.1.7",
+        "mgu-inputgate": "1.0.0"
+      },
+      "build": {
+        "python": "kit/tools/build.py",
+        "args": [
+          "{id}",
+          "--language",
+          "zh-CN"
+        ],
+        "sdk": "oap-sdk",
+        "output": "dist/{id}@{version}.tgz",
+        "network": [
+          "doom"
+        ],
+        "shared": [
+          "kit/runtime",
+          "kit/platform",
+          "kit/localization",
+          "kit/tools/build.py",
+          "kit/tools/pack_data.py",
+          "kit/tools/localize.py",
+          "kit/tools/locale-revisions.json",
+          "kit/tools/oapgen",
+          "oap-sdk"
+        ]
+      }
+    },
+    {
+      "id": "dyno",
+      "kind": "app",
+      "path": "apps/dyno",
+      "manifest": "app.json",
+      "title": "Virtual Dyno",
+      "description": "Power and torque curves from a full-throttle pull, saved and compared",
+      "texts": {
+        "zh-CN": {
+          "title": "虚拟马力机",
+          "description": "由全油门加速拉出功率与扭矩曲线，可保存并对比"
+        }
+      },
+      "mguHmi": [
+        "ID7"
+      ],
+      "requires": {
+        "idrive7-renderd": "2.1.7",
+        "mgu-inputgate": "1.0.0"
+      },
+      "build": {
+        "python": "kit/tools/build.py",
+        "args": [
+          "{id}",
+          "--language",
+          "zh-CN"
+        ],
+        "sdk": "oap-sdk",
+        "output": "dist/{id}@{version}.tgz",
+        "network": [
+          "doom"
+        ],
+        "shared": [
+          "kit/runtime",
+          "kit/platform",
+          "kit/localization",
+          "kit/tools/build.py",
+          "kit/tools/pack_data.py",
+          "kit/tools/localize.py",
+          "kit/tools/locale-revisions.json",
+          "kit/tools/oapgen",
+          "oap-sdk"
+        ]
+      }
+    },
+    {
+      "id": "edrive",
+      "kind": "app",
+      "path": "apps/edrive",
+      "manifest": "app.json",
+      "title": "eDrive",
+      "description": "Real electric range, live battery power, cells and climate power, HV battery health (SOH) and energy, last charge, charge log, 12 V battery voltage and a home-screen widget; on a 48 V mild hybrid its 48 V battery and DC/DC converter",
+      "texts": {
+        "zh-CN": {
+          "title": "EDrive助手",
+          "description": "真实纯电续航、实时电池功率、电芯与空调功率、高压电池健康度（SOH）与电量、上次充电与充电日志、12V 蓄电池电压，以及主屏幕小部件；48V 轻混车型显示其 48V 电池与 DC/DC 变换器"
+        }
+      },
+      "mguHmi": [
+        "ID7"
+      ],
+      "requires": {
+        "idrive7-renderd": "2.1.7",
+        "mgu-inputgate": "1.0.0"
+      },
+      "build": {
+        "python": "kit/tools/build.py",
+        "args": [
+          "{id}",
+          "--language",
+          "zh-CN"
+        ],
+        "sdk": "oap-sdk",
+        "output": "dist/{id}@{version}.tgz",
+        "network": [
+          "doom"
+        ],
+        "shared": [
+          "kit/runtime",
+          "kit/platform",
+          "kit/localization",
+          "kit/tools/build.py",
+          "kit/tools/pack_data.py",
+          "kit/tools/localize.py",
+          "kit/tools/locale-revisions.json",
+          "kit/tools/oapgen",
+          "oap-sdk"
+        ]
+      }
+    },
+    {
+      "id": "gforce",
+      "kind": "app",
+      "path": "apps/gforce",
+      "manifest": "app.json",
+      "title": "G-Force",
+      "description": "Friction circle with grip envelope, peak g per direction and session records",
+      "texts": {
+        "zh-CN": {
+          "title": "G 值仪表",
+          "description": "附着力圆环与抓地上限包络，各方向峰值 G 值，并记录每次行程成绩"
+        }
+      },
+      "mguHmi": [
+        "ID7"
+      ],
+      "requires": {
+        "idrive7-renderd": "2.1.7",
+        "mgu-inputgate": "1.0.0"
+      },
+      "build": {
+        "python": "kit/tools/build.py",
+        "args": [
+          "{id}",
+          "--language",
+          "zh-CN"
+        ],
+        "sdk": "oap-sdk",
+        "output": "dist/{id}@{version}.tgz",
+        "network": [
+          "doom"
+        ],
+        "shared": [
+          "kit/runtime",
+          "kit/platform",
+          "kit/localization",
+          "kit/tools/build.py",
+          "kit/tools/pack_data.py",
+          "kit/tools/localize.py",
+          "kit/tools/locale-revisions.json",
+          "kit/tools/oapgen",
+          "oap-sdk"
+        ]
+      }
+    },
+    {
+      "id": "live_adjustments",
+      "kind": "app",
+      "path": "apps/live_adjustments",
+      "manifest": "app.json",
+      "title": "Engine Config",
+      "description": "Engine Config for BMW MGU ID7. Exhaust Flap: OEM, OPEN and CLOSE over the car's own diagnostic link. With BM3 or MHD picked in Settings: engine map switching, burbles, ASD and Max Cooling. Experimental: xDrive off until the ignition cycle (DSC LMV_FUNKTION), behind its own setting",
+      "texts": {
+        "zh-CN": {
+          "title": "发动机配置",
+          "description": "BMW MGU ID7 的发动机配置。排气阀门：通过车辆自身诊断链路切换 OEM/常开/常闭。在设置中选定 BM3 或 MHD 后：可切换发动机 MAP、回火、ASD 与最大冷却。实验性功能：关闭 xDrive 直至下次点火循环（DSC LMV_FUNKTION），需在独立设置中开启"
+        }
+      },
+      "mguHmi": [
+        "ID7"
+      ],
+      "requires": {
+        "idrive7-renderd": "2.1.7",
+        "mgu-inputgate": "1.0.0"
+      },
+      "build": {
+        "python": "kit/tools/build.py",
+        "args": [
+          "{id}",
+          "--language",
+          "zh-CN"
+        ],
+        "sdk": "oap-sdk",
+        "output": "dist/{id}@{version}.tgz",
+        "network": [
+          "doom"
+        ],
+        "shared": [
+          "kit/runtime",
+          "kit/platform",
+          "kit/localization",
+          "kit/tools/build.py",
+          "kit/tools/pack_data.py",
+          "kit/tools/localize.py",
+          "kit/tools/locale-revisions.json",
+          "kit/tools/oapgen",
+          "oap-sdk"
+        ]
+      }
+    },
+    {
+      "id": "live_data",
+      "kind": "app",
+      "path": "apps/live_data",
+      "manifest": "app.json",
+      "title": "Live Data",
+      "description": "Read-only live values from the car and its control units, a trip computer with fuel cost, and gauge screens of your own, one of them as the home-screen widget",
+      "texts": {
+        "zh-CN": {
+          "title": "实时数据",
+          "description": "只读读取车辆及各控制单元的实时数值，含油费的行车电脑，以及你自定义的仪表页面，其中一页可作为主屏幕小部件"
+        }
+      },
+      "mguHmi": [
+        "ID7"
+      ],
+      "requires": {
+        "idrive7-renderd": "2.1.7",
+        "mgu-inputgate": "1.0.0"
+      },
+      "build": {
+        "python": "kit/tools/build.py",
+        "args": [
+          "{id}",
+          "--language",
+          "zh-CN"
+        ],
+        "sdk": "oap-sdk",
+        "output": "dist/{id}@{version}.tgz",
+        "network": [
+          "doom"
+        ],
+        "shared": [
+          "kit/runtime",
+          "kit/platform",
+          "kit/localization",
+          "kit/tools/build.py",
+          "kit/tools/pack_data.py",
+          "kit/tools/localize.py",
+          "kit/tools/locale-revisions.json",
+          "kit/tools/oapgen",
+          "oap-sdk"
+        ]
+      }
+    },
+    {
+      "id": "redline",
+      "kind": "app",
+      "path": "apps/redline",
+      "manifest": "app.json",
+      "title": "Redline",
+      "description": "Full-screen rev tach with shift lights, gear, shift scoring and cold-engine rev guard",
+      "texts": {
+        "zh-CN": {
+          "title": "换挡转速",
+          "description": "全屏转速表：换挡提示灯、挡位显示、换挡评分与冷车转速保护"
+        }
+      },
+      "mguHmi": [
+        "ID7"
+      ],
+      "requires": {
+        "idrive7-renderd": "2.1.7",
+        "mgu-inputgate": "1.0.0"
+      },
+      "build": {
+        "python": "kit/tools/build.py",
+        "args": [
+          "{id}",
+          "--language",
+          "zh-CN"
+        ],
+        "sdk": "oap-sdk",
+        "output": "dist/{id}@{version}.tgz",
+        "network": [
+          "doom"
+        ],
+        "shared": [
+          "kit/runtime",
+          "kit/platform",
+          "kit/localization",
+          "kit/tools/build.py",
+          "kit/tools/pack_data.py",
+          "kit/tools/localize.py",
+          "kit/tools/locale-revisions.json",
+          "kit/tools/oapgen",
+          "oap-sdk"
+        ]
+      }
+    },
+    {
+      "id": "service",
+      "kind": "app",
+      "path": "apps/service",
+      "manifest": "app.json",
+      "title": "Service",
+      "description": "Service requirements from the instrument cluster: oil, brakes, brake fluid, vehicle check, inspection - distance, date, details; brake fluid and vehicle check reset",
+      "texts": {
+        "zh-CN": {
+          "title": "保养信息",
+          "description": "读取仪表中的保养需求：机油、制动器、制动液、车辆检查、年检——含里程、日期与详情；支持制动液与车辆检查复位"
+        }
+      },
+      "mguHmi": [
+        "ID7"
+      ],
+      "requires": {
+        "idrive7-renderd": "2.1.7",
+        "mgu-inputgate": "1.0.0"
+      },
+      "build": {
+        "python": "kit/tools/build.py",
+        "args": [
+          "{id}",
+          "--language",
+          "zh-CN"
+        ],
+        "sdk": "oap-sdk",
+        "output": "dist/{id}@{version}.tgz",
+        "network": [
+          "doom"
+        ],
+        "shared": [
+          "kit/runtime",
+          "kit/platform",
+          "kit/localization",
+          "kit/tools/build.py",
+          "kit/tools/pack_data.py",
+          "kit/tools/localize.py",
+          "kit/tools/locale-revisions.json",
+          "kit/tools/oapgen",
+          "oap-sdk"
+        ]
+      }
+    },
+    {
+      "id": "warmup",
+      "kind": "app",
+      "path": "apps/warmup",
+      "manifest": "app.json",
+      "title": "Warm-Up",
+      "description": "Oil and coolant warm-up calculator (time to ready), safe rev limit and turbo cool-down",
+      "texts": {
+        "zh-CN": {
+          "title": "暖机助手",
+          "description": "机油与冷却液暖机计算（预计就绪时间）、安全的转速上限与涡轮冷却计时"
+        }
+      },
+      "mguHmi": [
+        "ID7"
+      ],
+      "requires": {
+        "idrive7-renderd": "2.1.7",
+        "mgu-inputgate": "1.0.0"
+      },
+      "build": {
+        "python": "kit/tools/build.py",
+        "args": [
+          "{id}",
+          "--language",
+          "zh-CN"
+        ],
+        "sdk": "oap-sdk",
+        "output": "dist/{id}@{version}.tgz",
+        "network": [
+          "doom"
+        ],
+        "shared": [
+          "kit/runtime",
+          "kit/platform",
+          "kit/localization",
+          "kit/tools/build.py",
+          "kit/tools/pack_data.py",
+          "kit/tools/localize.py",
+          "kit/tools/locale-revisions.json",
+          "kit/tools/oapgen",
+          "oap-sdk"
+        ]
+      }
+    },
+    {
+      "id": "zf8hp",
+      "kind": "app",
+      "path": "apps/zf8hp",
+      "manifest": "app.json",
+      "title": "Transmission Config",
+      "description": "Transmission Config, experimental ZF 8HP monitor: live data, clutch fill adaptations, shift maps and temperature history",
+      "texts": {
+        "zh-CN": {
+          "title": "变速箱配置",
+          "description": "变速箱配置，实验性 ZF 8HP 监视器：实时数据、离合器充油自适应、换挡 MAP 与温度历史"
+        }
+      },
+      "mguHmi": [
+        "ID7"
+      ],
+      "requires": {
+        "idrive7-renderd": "2.1.7",
+        "mgu-inputgate": "1.0.0"
+      },
+      "build": {
+        "python": "kit/tools/build.py",
+        "args": [
+          "{id}",
+          "--language",
+          "zh-CN"
+        ],
+        "sdk": "oap-sdk",
+        "output": "dist/{id}@{version}.tgz",
+        "network": [
+          "doom"
+        ],
+        "shared": [
+          "kit/runtime",
+          "kit/platform",
+          "kit/localization",
+          "kit/tools/build.py",
+          "kit/tools/pack_data.py",
+          "kit/tools/localize.py",
+          "kit/tools/locale-revisions.json",
+          "kit/tools/oapgen",
+          "oap-sdk"
+        ]
+      }
+    }
+  ],
+  "tools": [
+    {
+      "id": "idrive7-renderd",
+      "path": "kit/renderd/prebuilt",
+      "title": "GPU renderer",
+      "description": "The apps' own GPU renderer (mgu-render): draws them at 60 fps, beside the MGU Store's Renderer; installed with the apps",
+      "provides": "renderer",
+      "mguHmi": [
+        "ID7"
+      ]
+    },
+    {
+      "id": "mgu-inputgate",
+      "path": "kit/renderd/prebuilt",
+      "version": "1.0.0",
+      "title": "Controller gate",
+      "description": "Lets the apps have the iDrive controller (tabs, page buttons, settings, Doom); loads into the HMI at the next start",
+      "needs": [
+        "renderer"
+      ],
+      "optional": false,
+      "mguHmi": [
+        "ID7"
+      ],
+      "preload": {
+        "library": "mgu-inputgate.so",
+        "unit": "hmi.service",
+        "process": "HmiMain3D",
+        "strikes": 2,
+        "checkAfterSeconds": 120,
+        "healthySeconds": 60
+      }
+    }
+  ]
+}

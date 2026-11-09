@@ -9,7 +9,9 @@
 **状态：已发布，并已在真车验证通过。**
 
 - 已发布：**https://github.com/1031527554/idrive7-apps-zh**（公开，分支 `main`）
-- 真车结果（车主 2026-11-09 确认）：**14 个应用全部经 Store 从本源自建并安装成功，界面均为中文**
+- 真车结果（车主 2026-11-09 确认）：**当时 14 个应用全部经 Store 从本源自建并安装成功，界面均为中文**
+- 2026-11-09 已同步上游：现在共 **15 个应用**（新增 `ambient_config 1.1.0`；另有 4 个升级：
+  `edrive 2.8.3`、`live_adjustments 0.9.0`、`redline 1.15.2`、`service 1.6.0`）。新增的这个应用**尚未上车验证**
 
 ## 与上游的差异（只有这些）
 
@@ -55,8 +57,11 @@
 
 ## 限制与已知问题
 
-- **翻译覆盖率 90%**：界面字符串共 577 条，中文语料覆盖 522 条；剩下的是 `km/h`、`mph`、`Nm`、`PS`、
-  `bar/psi`、货币代码（`CAD`/`CHF`…）、`KF1`/`KF2` 等**上游有意保留的单位与缩写**，不是遗漏。
+- **翻译覆盖率随上游功能增长而下降**：2026-11-09 同步后，691 条界面字符串译出 559 条（80%）。
+  `ambient_config`、`service`、`warmup`、`dtc_scanner` 等为满载；`edrive`、`live_adjustments` 剩余的是单位
+  （`0 %`、`2,500 rpm`）；但 **`redline` 只剩 56/128** —— 上游新加的 HUD/仪表设置
+  （`80s digital dash`、`Boost unit`、`Burst (pops, ring)`…）中文语料尚未覆盖，这些条目在应用里会显示英文，
+  等上游译者补齐后重新同步即可。上游有意保留的单位与缩写（`km/h`、`Nm`、货币代码等）不算遗漏。
 - 翻译由上游署名译者提供，**机器辅助、未逐句人工审校**（见 `docs/diagnostic-chinese.md`）；
   故障库说明可能存在术语错误。
 - 本 fork **新增**的只有 `fork-tools/zh-CN-descriptions.json` 里的 14 条"列表描述"（Store 列表用），
@@ -65,14 +70,34 @@
 - 与上游版本会分叉：上游升级后需 `git pull` 并重跑生成脚本。
 - `.github/workflows/` 保留上游 CI（含需要 Docker 的 renderd 构建）；在 fork 上失败属正常，不影响本用途。
 
-## 重新生成清单（上游升级后）
+## 同步上游更新
+
+上游一有更新就跑这三步（`fork-tools/sync_upstream.py` 会做"覆盖为上游树 → 保留本 fork 的文件 →
+重贴 `localize.py` 补丁 → 刷新 `mgu-repo.json.upstream` → 重新生成 `mgu-repo.json`"）：
 
 ```powershell
-cd D:\id7\idrive7-apps-zh
-git pull
-copy mgu-repo.json mgu-repo.json.upstream   # 保存新的上游清单
-python fork-tools\gen_mgu_repo.py .
+# 1) 取上游当前 main 并解压
+curl.exe -sSL -o up.tgz https://codeload.github.com/cauliflowermossgrape/idrive7-apps/tar.gz/refs/heads/main
+tar -xzf up.tgz -C _upstream
+
+# 2) 一条命令同步（第 3 个参数给旧基线时，还会列出应用版本与描述的变化）
+python fork-tools\sync_upstream.py _upstream\idrive7-apps-main .
+
+# 3) 校验并推送
+node ..\validate_fork_source.cjs        # 用 Store 自己的解析器验清单
+python ..\dryrun_localize.py .          # 覆盖率 + 未译条目
+git add -A; git commit -m "sync upstream main"; git push
 ```
+
+同步后请检查两处（脚本会提示）：
+
+- **`descriptions changed upstream`**：上游改了某应用的英文描述 → 人工更新
+  `fork-tools/zh-CN-descriptions.json` 里对应的中文描述，再重跑 `gen_mgu_repo.py`。
+- **上游新增应用** → `gen_mgu_repo.py` 会打印 `no fork description for: <id>`，补一条中文描述即可
+  （标题会自动取上游中文语料）。
+
+安全阀：若上游改动了 `kit/tools/localize.py` 的 `package_version()`，脚本会**拒绝盲同步**
+（`refuse to sync blindly`），需要人工合并后再跑。
 
 ## 验证记录（2026-11-07，全部为电脑侧离线验证）
 

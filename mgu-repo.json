@@ -2,6 +2,51 @@
   "schema": 1,
   "components": [
     {
+      "id": "ambient_config",
+      "kind": "app",
+      "path": "apps/ambient_config",
+      "manifest": "app.json",
+      "title": "Ambient config",
+      "description": "The ambient light's colour: set it here, or let each driving mode choose one",
+      "texts": {
+        "zh-CN": {
+          "title": "氛围灯设置",
+          "description": "氛围灯颜色：在这里直接设定，或让每种驾驶模式各自选定一种颜色（新增于上游 2026-11-09 更新）"
+        }
+      },
+      "mguHmi": [
+        "ID7"
+      ],
+      "requires": {
+        "idrive7-renderd": "2.1.7",
+        "mgu-inputgate": "1.0.0"
+      },
+      "build": {
+        "python": "kit/tools/build.py",
+        "args": [
+          "{id}",
+          "--language",
+          "zh-CN"
+        ],
+        "sdk": "oap-sdk",
+        "output": "dist/{id}@{version}.tgz",
+        "network": [
+          "doom"
+        ],
+        "shared": [
+          "kit/runtime",
+          "kit/platform",
+          "kit/localization",
+          "kit/tools/build.py",
+          "kit/tools/pack_data.py",
+          "kit/tools/localize.py",
+          "kit/tools/locale-revisions.json",
+          "kit/tools/oapgen",
+          "oap-sdk"
+        ]
+      }
+    },
+    {
       "id": "brake_test",
       "kind": "app",
       "path": "apps/brake_test",
@@ -277,11 +322,11 @@
       "path": "apps/edrive",
       "manifest": "app.json",
       "title": "eDrive",
-      "description": "Real electric range, live battery power, cells and climate power, HV battery health (SOH) and energy, last charge, charge log, 12 V battery voltage and a home-screen widget; on a 48 V mild hybrid its 48 V battery and DC/DC converter",
+      "description": "Real electric range, live battery power, cells and climate power, HV battery health (SOH) and energy, last charge, charge log, the 12 V battery (charge, voltage, what it does, regen, history) and a home-screen widget; on a 48 V mild hybrid its 48 V battery and DC/DC converter",
       "texts": {
         "zh-CN": {
           "title": "EDrive助手",
-          "description": "真实纯电续航、实时电池功率、电芯与空调功率、高压电池健康度（SOH）与电量、上次充电与充电日志、12V 蓄电池电压，以及主屏幕小部件；48V 轻混车型显示其 48V 电池与 DC/DC 变换器"
+          "description": "真实纯电续航、实时电池功率、电芯与空调功率、高压电池健康度（SOH）与电量、上次充电与充电日志、12V 蓄电池（充电状态、电压、作用、能量回收、历史记录）以及主屏幕小部件；48V 轻混车型显示其 48V 电池与 DC/DC 变换器"
         }
       },
       "mguHmi": [
@@ -367,11 +412,11 @@
       "path": "apps/live_adjustments",
       "manifest": "app.json",
       "title": "Engine Config",
-      "description": "Engine Config for BMW MGU ID7. Exhaust Flap: OEM, OPEN and CLOSE over the car's own diagnostic link. With BM3 or MHD picked in Settings: engine map switching, burbles, ASD and Max Cooling. Experimental: xDrive off until the ignition cycle (DSC LMV_FUNKTION), behind its own setting",
+      "description": "Engine Config for BMW MGU ID7. Exhaust Flap: OEM, OPEN and CLOSE over the car's own diagnostic link, or following the driving mode (Sport open, Eco Pro closed); held against the DME's timeout, Close handed back above a set engine speed. With BM3 or MHD picked in Settings: engine map switching, burbles, ASD and Max Cooling. Experimental: xDrive off until the ignition cycle (DSC LMV_FUNKTION), behind its own setting",
       "texts": {
         "zh-CN": {
           "title": "发动机配置",
-          "description": "BMW MGU ID7 的发动机配置。排气阀门：通过车辆自身诊断链路切换 OEM/常开/常闭。在设置中选定 BM3 或 MHD 后：可切换发动机 MAP、回火、ASD 与最大冷却。实验性功能：关闭 xDrive 直至下次点火循环（DSC LMV_FUNKTION），需在独立设置中开启"
+          "description": "BMW MGU ID7 的发动机配置。排气阀门：通过车辆自身诊断链路在 OEM/常开/常闭之间切换，或跟随驾驶模式（Sport 打开、Eco Pro 关闭）；会对抗 DME 的超时自动复位，超过设定转速后交还关闭状态。在设置中选定 BM3 或 MHD 后：可切换发动机 MAP、回火、ASD 与最大冷却。实验性功能：关闭 xDrive 直至下次点火循环（DSC LMV_FUNKTION），需在独立设置中开启"
         }
       },
       "mguHmi": [

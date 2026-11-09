@@ -6,6 +6,11 @@
 上游原样保留：`LICENSE`、`NOTICE.zh-CN.md`、`README*.md`、`kit/`、`apps/`、`deploy/`、`docs/`、
 以及**中文 UI 语料** `kit/runtime/locales/zh-CN.json`（译名来自该目录，未改动）。
 
+**状态：已发布，并已在真车验证通过。**
+
+- 已发布：**https://github.com/1031527554/idrive7-apps-zh**（公开，分支 `main`）
+- 真车结果（车主 2026-11-09 确认）：**14 个应用全部经 Store 从本源自建并安装成功，界面均为中文**
+
 ## 与上游的差异（只有这些）
 
 | # | 文件 | 改动 | 原因 |
@@ -30,10 +35,12 @@
 
 ## 发布与安装（车主操作）
 
-1. **推到自己的 GitHub 仓库**（公开）：
+1. **推到自己的 GitHub 仓库 —— （已完成）** 本 fork 已发布为
+   **https://github.com/1031527554/idrive7-apps-zh**（公开，分支 `main`）。
+   如需在别处重建，命令：
    ```powershell
    cd D:\id7\idrive7-apps-zh
-   git remote add origin https://github.com/<你的用户名>/idrive7-apps-zh.git
+   git remote add origin https://github.com/<用户名>/idrive7-apps-zh.git
    git push -u origin main
    ```
    > 仓库内**不含** BMW SDK：`oap-sdk/` 由车机的 mgu-deploy 生成后写入构建副本（`.gitignore` 已排除）。
@@ -93,5 +100,5 @@ python fork-tools\gen_mgu_repo.py .
 - **独立只读复核**（另一个 agent，未参与本 fork 编写）：结论 **无 BLOCKER，可安全公开推送** ——
   已跟踪的 611 个文件里无 VIN、无私钥、无 `oap-sdk/`、无 `dist/`、无 token、无本机用户名/绝对路径；
   并独立复算了上述解析与整树差异。
-- **未验证**：车机侧实际构建（`build.py --language zh-CN` 与 Store 注入 `oap-sdk`）、安装、
-  中文界面显示，均待上车确认；`doom` 构建需车机联网（uplink）。
+- **真车验证（车主 2026-11-09 确认）**：14 个应用全部经 Store 从本源自建并安装成功，界面均为中文。
+  该结论为**车主报告**，未由本仓库作者独立复核，逐应用的构建日志与界面证据未留存。

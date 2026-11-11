@@ -7,11 +7,11 @@
       "path": "apps/ambient_config",
       "manifest": "app.json",
       "title": "Ambient config",
-      "description": "The ambient light's colour: set it here, or let each driving mode choose one",
+      "description": "Any colour on the ambient light, animations, and a look for each driving mode",
       "texts": {
         "zh-CN": {
           "title": "氛围灯设置",
-          "description": "氛围灯颜色：在这里直接设定，或让每种驾驶模式各自选定一种颜色（新增于上游 2026-11-09 更新）"
+          "description": "氛围灯任意颜色、动态灯效，以及每种驾驶模式对应的一套灯光观感"
         }
       },
       "mguHmi": [
@@ -502,11 +502,11 @@
       "path": "apps/redline",
       "manifest": "app.json",
       "title": "Redline",
-      "description": "Full-screen rev tach with shift lights, gear, shift scoring and cold-engine rev guard",
+      "description": "Full-screen rev tach with shift lights, gear, shift scoring and cold-engine rev guard; HUD by @biscotit",
       "texts": {
         "zh-CN": {
           "title": "换挡转速",
-          "description": "全屏转速表：换挡提示灯、挡位显示、换挡评分与冷车转速保护"
+          "description": "全屏转速表：换挡提示灯、挡位显示、换挡评分与冷车转速保护；HUD 由 @biscotit 贡献"
         }
       },
       "mguHmi": [

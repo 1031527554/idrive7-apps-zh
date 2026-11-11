@@ -41,8 +41,10 @@ if our_block == up_block:
 if "language == 'zh-CN'" not in our_block:
     sys.exit('the fork patch does not look like ours - refusing to sync blindly')
 
-# 2. copy the new upstream tree over the fork (upstream removes nothing here)
-copied = 0
+# 2. copy the new upstream tree over the fork; with <old> given, also drop the
+#    files upstream removed (a fork-only file is never in an upstream tree, so
+#    this can only touch files upstream itself had)
+copied = deleted = 0
 for p in new.rglob('*'):
     rel = p.relative_to(new)
     if rel.parts and rel.parts[0] in SKIP_TOP:
@@ -55,6 +57,29 @@ for p in new.rglob('*'):
         shutil.copy2(p, dest)
         copied += 1
 print(f'copied {copied} files from {new}')
+if old:
+    for p in old.rglob('*'):
+        if not p.is_file():
+            continue
+        rel = p.relative_to(old)
+        if rel.parts and rel.parts[0] in SKIP_TOP:
+            continue
+        if (new / rel).exists():
+            continue
+        gone = fork / rel
+        if gone.exists():
+            gone.unlink()
+            deleted += 1
+            print(f'  dropped (upstream removed it): {rel}')
+    for d in sorted((x for x in fork.rglob('*') if x.is_dir()), key=lambda x: -len(x.parts)):
+        rel = d.relative_to(fork)
+        if rel.parts and (rel.parts[0] in SKIP_TOP or rel.parts[0] == 'fork-tools'):
+            continue
+        try:
+            d.rmdir()  # only if the dropped files had left it empty
+        except OSError:
+            pass
+print(f'deleted {deleted} files upstream dropped')
 
 # 3. the upstream manifest this fork was generated from
 shutil.copy2(new / 'mgu-repo.json', fork / 'mgu-repo.json.upstream')

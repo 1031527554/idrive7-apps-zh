@@ -31,15 +31,36 @@ def app_jsons(root):
     return out
 
 
-# 1. our patched block, before the copy overwrites it
-loc = (fork / 'kit/tools/localize.py').read_text(encoding='utf-8')
-our_block = loc[loc.index('def package_version('):loc.index('def localize_spec(')]
-up_loc = (new / 'kit/tools/localize.py').read_text(encoding='utf-8')
-up_block = up_loc[up_loc.index('def package_version('):up_loc.index('def localize_spec(')]
-if our_block == up_block:
+# 1. the fork's patched localize.py, before the copy overwrites it. Every
+#    top-level function that differs from upstream's is re-applied after the
+#    copy, so a second patched function (load_locale) survives as well.
+def blocks(text):
+    """{name: chunk} for a module's top-level defs, the header under ''."""
+    out, name, buf = {}, '', []
+    for line in text.splitlines(keepends=True):
+        if line.startswith('def '):
+            out[name] = ''.join(buf)
+            name = line[4:line.index('(')].strip()
+            buf = [line]
+        else:
+            buf.append(line)
+    out[name] = ''.join(buf)
+    return out
+
+
+up_text = (new / 'kit/tools/localize.py').read_text(encoding='utf-8')
+our_text = (fork / 'kit/tools/localize.py').read_text(encoding='utf-8')
+up_blocks, our_blocks = blocks(up_text), blocks(our_text)
+patched = [n for n in our_blocks if n and n in up_blocks and our_blocks[n] != up_blocks[n]]
+vanished = [n for n in our_blocks if n and n not in up_blocks]
+if not patched:
     sys.exit('the fork patch is not in the working copy - refusing to sync blindly')
-if "language == 'zh-CN'" not in our_block:
-    sys.exit('the fork patch does not look like ours - refusing to sync blindly')
+if vanished:
+    sys.exit(f'upstream no longer has {", ".join(vanished)}() - merge by hand')
+for n in patched:
+    if 'zh-CN' not in our_blocks[n]:
+        sys.exit(f'the fork patch to {n}() does not look like ours - refusing to sync blindly')
+print('fork-patched functions: ' + ', '.join(f'{n}()' for n in patched))
 
 # 2. copy the new upstream tree over the fork; with <old> given, also drop the
 #    files upstream removed (a fork-only file is never in an upstream tree, so
@@ -84,12 +105,14 @@ print(f'deleted {deleted} files upstream dropped')
 # 3. the upstream manifest this fork was generated from
 shutil.copy2(new / 'mgu-repo.json', fork / 'mgu-repo.json.upstream')
 
-# 4. re-apply the fork patch
+# 4. re-apply every fork-patched function
 loc2 = (fork / 'kit/tools/localize.py').read_text(encoding='utf-8')
-if loc2.count(up_block) != 1:
-    sys.exit('upstream package_version() changed shape - merge by hand')
-(fork / 'kit/tools/localize.py').write_text(loc2.replace(up_block, our_block), encoding='utf-8', newline='\n')
-print('re-applied the fork patch to kit/tools/localize.py')
+for n in patched:
+    if loc2.count(up_blocks[n]) != 1:
+        sys.exit(f'upstream {n}() changed shape - merge by hand')
+    loc2 = loc2.replace(up_blocks[n], our_blocks[n])
+(fork / 'kit/tools/localize.py').write_text(loc2, encoding='utf-8', newline='\n')
+print('re-applied the fork patch: ' + ', '.join(f'{n}()' for n in patched))
 
 # 5. what the catalogs say now
 if old:

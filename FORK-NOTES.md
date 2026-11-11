@@ -18,9 +18,9 @@
 
 | # | 文件 | 改动 | 原因 |
 |---|---|---|---|
-| 1 | `mgu-repo.json` | 用 `components: [...]` **逐条列出 14 个应用**（上游是 `apps: {"path": "apps/*"}` 单条 pattern），每条带 `title`/`description`/`texts['zh-CN']`；`build.args` 改为 `["{id}", "--language", "zh-CN"]` | ① 让车机侧构建中文；② 让 Store 列表显示中文名（`sources.js` 的 `pick()` 优先取本条目的值，`catalog.js` 的 `textsOf()` 接受 `zh-CN`）。pattern 形式无法逐 app 给不同文案 |
-| 2 | `kit/tools/localize.py` | `package_version()` **只对 `zh-CN`** 直接返回版本号（不再追加 `-zh.cn.<rev>`）；`en` / `ru` / `ko` 的行为与上游**完全一致** | Store 的目录校验只接受 `x.y.z`（`catalog.js` 的 `SEMVER`），deploy 工具也按 `preinstalled_apps/<id>@<x.y.z>.tgz` 命名（`mgu-deploy.js:5382`）。带上后缀的包**既不能发布也不能安装** |
-| 3 | `fork-tools/`（新增） | `gen_mgu_repo.py`（重新生成 `mgu-repo.json`）、`zh-CN-descriptions.json`（列表描述中文） | 上游升级后可用一条命令重建清单；见下方"重新生成" |
+| 1 | `mgu-repo.json` | 用 `components: [...]` **逐条列出 15 个应用**（上游是 `apps: {"path": "apps/*"}` 单条 pattern），每条带 `title`/`description`/`texts['zh-CN']`；`build.args` 改为 `["{id}", "--language", "zh-CN"]` | ① 让车机侧构建中文；② 让 Store 列表显示中文名（`sources.js` 的 `pick()` 优先取本条目的值，`catalog.js` 的 `textsOf()` 接受 `zh-CN`）。pattern 形式无法逐 app 给不同文案 |
+| 2 | `kit/tools/localize.py` | 两处：`package_version()` **只对 `zh-CN`** 返回原版本（不再追加 `-zh.cn.<rev>`）；`load_locale()` 为 `zh-CN` **合并 fork 补充表**（上游条目优先） | 前者：Store 目录校验只接受 `x.y.z`（`catalog.js` 的 `SEMVER`），deploy 工具也按 `preinstalled_apps/<id>@<x.y.z>.tgz` 命名（`mgu-deploy.js:5382`），带后缀的包**既不能发布也不能安装**。后者：上游语料没跟上的界面文案先用补充表填上 |
+| 3 | `fork-tools/`（新增） | `gen_mgu_repo.py`（重建清单）、`sync_upstream.py`（一键同步）、`zh-CN-descriptions.json`（Store 列表描述）、`zh-CN-supplement.json`（上游语料未覆盖的界面中文） | 上游升级后一条命令重建；补充表不改上游语料、同步自动保留 |
 | 4 | `mgu-repo.json.upstream`（新增） | 上游原始清单，供生成脚本读取 | 便于对照与回滚 |
 
 `build`/`requires`/`mguHmi`/`tools` 的值**全部照抄上游**（`python: kit/tools/build.py`、`sdk: oap-sdk`、
@@ -58,13 +58,13 @@
 
 ## 限制与已知问题
 
-- **翻译覆盖率随上游功能增长而持续下降**：2026-11-11 同步后 **555/753（73%）**
-  （11-09 为 80%，11-07 为 90%）。上游自 2026-11-09 起**没有更新** `kit/runtime/locales/zh-CN.json`，
-  而 `redline` 的界面字符串从 128 条涨到 **188 条**（只译出 60 条）。
-  `service`、`warmup`、`dtc_scanner` 为满载；`car_vitals`、`dyno`、`edrive`、`live_data`、`live_adjustments`
-  剩余的基本是单位与缩写（`bar/psi`、`Nm`、`0 %`、`2,500 rpm`、货币代码…），**不算遗漏**；
-  `redline` 新加的 HUD/仪表设置（`80s digital dash`、`12 V battery charge (%)`…）在应用里会显示英文。
-  等上游译者补齐语料后重新同步即可改善；也可用 fork 本地补充表先填（见下条）。
+- **翻译覆盖**：2026-11-11 为 **661/753（87%）**（同日加补充表前是 73%，11-09 为 80%，11-07 为 90%）。
+  上游自 2026-11-09 起**没有更新** `kit/runtime/locales/zh-CN.json`，而 `redline` 从 128 条涨到 188 条；
+  `redline` 现在 **166/188**，剩下 22 条是单位符号、字体名与纯温度值（`km/h`、`Nm`、`bar`、`Ubuntu`、
+  `60 °C (140 °F)` 等）——**这些在任何语言里都应保持原样**，故有意不译。
+  `service`、`warmup`、`dtc_scanner` 满载；`car_vitals`、`dyno`、`edrive`、`live_data`、`live_adjustments`
+  剩余的也基本是单位与缩写，不算遗漏。
+  上游译者补齐语料后重新同步即可：**上游条目始终优先**，被上游覆盖的补充表键会让位。
 - 翻译由上游署名译者提供，**机器辅助、未逐句人工审校**（见 `docs/diagnostic-chinese.md`）；
   故障库说明可能存在术语错误。
 - 本 fork **新增**的只有 `fork-tools/zh-CN-descriptions.json` 里的 14 条"列表描述"（Store 列表用），
@@ -76,7 +76,8 @@
 ## 同步上游更新
 
 上游一有更新就跑这三步（`fork-tools/sync_upstream.py` 会做"覆盖为上游树 → **删除上游已移除的文件** →
-保留本 fork 的文件 → 重贴 `localize.py` 补丁 → 刷新 `mgu-repo.json.upstream` → 重新生成 `mgu-repo.json`"）：
+保留本 fork 的文件 → **重贴 `localize.py` 里所有被改动过的顶层函数**（目前是 `load_locale()` 与
+`package_version()`）→ 刷新 `mgu-repo.json.upstream` → 重新生成 `mgu-repo.json`"）：
 
 ```powershell
 # 1) 取上游当前 main 并解压

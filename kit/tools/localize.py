@@ -36,7 +36,19 @@ def languages():
 def load_locale(language):
     if language not in languages():
         raise ValueError('Unknown language: ' + language)
-    return {} if language == 'en' else json.loads((LOCALES / (language + '.json')).read_text(encoding='utf-8'))
+    if language == 'en':
+        return {}
+    words = json.loads((LOCALES / (language + '.json')).read_text(encoding='utf-8'))
+    if language == 'zh-CN':
+        # Fork change: fill what upstream's catalog does not cover yet. The
+        # upstream catalog always wins - fork-tools/zh-CN-supplement.json only
+        # adds the keys it has no entry for (see that file's _note).
+        extra = ROOT / 'fork-tools' / 'zh-CN-supplement.json'
+        if extra.exists():
+            for k, v in json.loads(extra.read_text(encoding='utf-8')).items():
+                if not k.startswith('_'):
+                    words.setdefault(k, v)
+    return words
 
 
 def text(value, words):

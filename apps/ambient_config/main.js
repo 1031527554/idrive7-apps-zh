@@ -16,6 +16,7 @@
  */
 const mgu = require('./kit/mgu');
 const G = require('./kit/gauges');
+const Car = require('./kit/car');
 const { withAlpha } = require('./kit/canvas');
 const { Diag } = require('./kit/diag');
 const { Ambient, SLOTS } = require('./ambient');
@@ -34,6 +35,9 @@ const RING = { cx: 290, cy: 288, R: 186, r: 136 }, DIAL = { cx: 655, cy: 400, R:
 
 const ON_BY_DEFAULT = ['follow', 'flashAlerts'];
 const DAY_NIGHT = { KEINE_AENDERUNG: 0, TAG: 1, NACHT: 2, SIGNAL_UNGUELTIG: 3 };
+const num = (x) => (typeof x === 'number' && isFinite(x) ? x : 0);
+const BPM_STEPS = [60, 80, 100, 120, 140, 160, 180];
+const DRIVE_SOURCES = [['rev', 'Revs'], ['speed', 'Speed'], ['g', 'G-force']];
 
 async function background(bg) {
     const { settings, signals, log } = bg;
@@ -42,7 +46,15 @@ async function background(bg) {
     const diag = await new Diag(signals, log).init();
     diag.quiet = true; diag.busyLog = false;
     const lights = new Lights({ diag, log });
-    const control = new Control({ settings, lights, ambient, log });
+    // the live values the Follow driving animation reads (kit/car.js scales BMW's own signals and
+    // demos a drive while no car answers, so the animation can be seen in the box)
+    const live = { rpm: 0, speed: 0, gLat: 0, gLong: 0 };
+    const car = new Car(bg, ['rpm', 'speed', 'accel']);
+    car.onSample((d) => {
+        live.rpm = num(d.rpm); live.speed = num(d.speed);
+        live.gLat = num(d.gLat); live.gLong = num(d.gLong);
+    });
+    const control = new Control({ settings, lights, ambient, log, car: live });
     control.start();
     // with the lights answering, the driving modes' looks replace BMW's colours by mode (ambient.js)
     lights.on('change', () => { ambient.slotsOff = lights.lights.length > 0; });
@@ -55,7 +67,7 @@ async function background(bg) {
         },
     }, log).catch((e) => log.warn('day / night: ' + (e && e.message || e)));
     settings.onChange((key) => { if (key === 'nightDim') control.night(control._night); if (key === 'follow') control.apply(); });
-    return { ambient, lights, control };
+    return { ambient, lights, control, live };
 }
 
 const nearest = (rgb) => {
@@ -72,7 +84,7 @@ mgu.run({
     background,
     async start(ctx) {
         const { ui, settings, log } = ctx;
-        const { ambient, lights, control } = ctx.background || await background(ctx);
+        const { ambient, lights, control, live } = ctx.background || await background(ctx);
         // editing: null (the driver's own look) or a driving mode whose look the Colour and Animations tabs change
         let page = 0, part = 'all', dirty = true, editing = null;
         const T0 = Date.now();
@@ -82,7 +94,7 @@ mgu.run({
         const isOn = () => (editing ? !!control.modeLook(editing) : control.on());
         const done = () => { editing = null; page = 2; return redraw(); };
         // what the picture shows: a driving mode being changed as it will look, else the lights as the car shows them
-        const pictureOf = (l, lk) => (editing ? (x) => S.lightAt(lk, x, Date.now() - T0) : l);
+        const pictureOf = (l, lk) => (editing ? (x) => S.lightAt(Object.assign({}, lk, { car: live }), x, Date.now() - T0) : l);
         const partColour = (l) => (part === 'lower' ? l.lower : l.upper);
         const shown = () => (lights.lights.length ? lights.lights : sample());
         const rhd = () => settings.get('drive') === 'rhd';
@@ -181,20 +193,48 @@ mgu.run({
             const l = look();
             G.panel(cv, t, 24, 44, 640, 468, editing ? 'Animation for ' + MODE_NAMES[editing] : 'Animation');
             const kinds = [['solid', 'No animation, a steady colour'], ['breathing', 'Slowly brighter and dimmer'], ['rainbow', 'Every colour in turn'],
-                ['fade', 'Upper colour to lower colour and back'], ['wave', 'Colour moving from the dash to the rear']];
+                ['fade', 'Upper colour to lower colour and back'], ['wave', 'Colour moving from the dash to the rear'],
+                ['cycle', 'Walks through the palette, on and on'], ['beat', 'A beat at the beats a minute below'],
+                ['drive', 'Revs, speed or g give it as the car is driven']];
+            let picked = '';
             kinds.forEach(([k, d], i) => {
-                const y = 92 + i * 66, on = isOn() && l.kind === k;
-                G.button(cv, t, 44, y, 220, 50, S.NAMES[k], () => { setLook({ kind: k }); return redraw(); }, { primary: on, key: 'k-' + k });
-                cv.text(d, 284, y + 32, 20, on ? t.text : t.dim);
+                const x = 44 + (i % 2) * 310, y = 86 + Math.floor(i / 2) * 52, on = isOn() && l.kind === k;
+                G.button(cv, t, x, y, 290, 44, S.NAMES[k], () => { setLook({ kind: k }); return redraw(); }, { primary: on, key: 'k-' + k });
+                if (on) picked = d;
             });
-            cv.text('Speed', 44, 470, 20, t.dim);
+            cv.text(picked, 44, 302, 18, picked ? t.text : t.dim);
+            cv.text('Speed', 44, 352, 20, t.dim);
             [[1, 'Slow'], [2, 'Normal'], [3, 'Fast']].forEach(([v, n], i) => {
-                G.button(cv, t, 120 + i * 150, 440, 136, 48, n, () => { setLook({ speed: v }); return redraw(); }, { primary: (l.speed || 2) === v, key: 'sp-' + v });
+                G.button(cv, t, 130 + i * 130, 330, 120, 44, n, () => { setLook({ speed: v }); return redraw(); }, { primary: (l.speed || 2) === v, key: 'sp-' + v });
             });
+            // what the animation picked is tuned with
+            if (l.kind === 'cycle') {
+                cv.text('Palette', 44, 412, 20, t.dim);
+                Object.keys(S.PALETTES).forEach((k, i) => {
+                    G.button(cv, t, 130 + i * 120, 390, 110, 44, S.PALETTE_NAMES[k], () => { setLook({ palette: k }); return redraw(); },
+                        { primary: (l.palette || 'full') === k, key: 'pal-' + k });
+                });
+            } else if (l.kind === 'beat') {
+                const bpm = l.bpm || S.DEFAULT_BPM, i = BPM_STEPS.indexOf(bpm);
+                cv.text('Beats a minute', 44, 412, 20, t.dim);
+                G.button(cv, t, 130, 390, 60, 44, '-', () => { setLook({ bpm: BPM_STEPS[Math.max(0, i > 0 ? i - 1 : 0)] }); return redraw(); }, { key: 'bpm-' });
+                cv.text(String(bpm), 200, 420, 28, t.text, { align: 'center', font: 'bold' });
+                G.button(cv, t, 240, 390, 60, 44, '+', () => { setLook({ bpm: BPM_STEPS[Math.min(BPM_STEPS.length - 1, i < 0 ? 0 : i + 1)] }); return redraw(); }, { key: 'bpm+' });
+            } else if (l.kind === 'drive') {
+                cv.text('Driven by', 44, 412, 20, t.dim);
+                DRIVE_SOURCES.forEach(([v, n], i) => {
+                    G.button(cv, t, 150 + i * 130, 390, 120, 44, n, () => { setLook({ source: v }); return redraw(); },
+                        { primary: (l.source || 'rev') === v, key: 'src-' + v });
+                });
+            } else {
+                cv.text('Colours: on the Colour tab', 44, 412, 18, t.dim);
+            }
 
             G.panel(cv, t, 678, 44, 898, 468, editing ? MODE_NAMES[editing] + ' will look' : 'In the car');
-            // the picture shows the animation picked even before the car has answered
-            const preview = (x) => (lights.scene ? lights.at(x) : control.on() ? S.lightAt(l, x, Date.now() - T0) : null);
+            // the picture shows the animation picked even before the car has answered, and the live
+            // values of a Follow driving animation
+            const nowScene = Object.assign({}, l, { car: live });
+            const preview = (x) => (lights.scene ? lights.at(x) : control.on() ? S.lightAt(nowScene, x, Date.now() - T0) : null);
             drawCabin(cv, t, { x: 700, y: 92, w: 420, h: 404 }, shown(), pictureOf(preview, l), { rhd: rhd() });
             const x = 1150;
             [['Upper', l.upper], ['Lower', l.lower]].forEach(([n, v], i) => {

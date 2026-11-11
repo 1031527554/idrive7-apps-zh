@@ -10,12 +10,29 @@
  *   wave       a band of colour moving from the dash to the rear
  *   welcome    a sweep of the colour from the dash to the rear, once (then solid)
  *   pulse      red for 1.5 s, then the colour (Sport)
+ *   cycle      the whole cabin walks through a palette, on and on (scene.palette: which one)
+ *   beat       a beat at scene.bpm: quickly on, then down to the next one
+ *   drive      the car drives it: rev, speed or g (scene.source), from scene.car's live values
  * speed: 1 slow, 2 normal, 3 fast.
  */
-const KINDS = ['solid', 'breathing', 'rainbow', 'fade', 'wave'];
+const KINDS = ['solid', 'breathing', 'rainbow', 'fade', 'wave', 'cycle', 'beat', 'drive'];
 const ONCE = { welcome: 2600, pulse: 2000 };
-const NAMES = { solid: 'Solid', breathing: 'Breathing', rainbow: 'Rainbow', fade: 'Smooth fade', wave: 'Colour wave', welcome: 'Welcome sweep', pulse: 'Sport pulse' };
+const NAMES = { solid: 'Solid', breathing: 'Breathing', rainbow: 'Rainbow', fade: 'Smooth fade', wave: 'Colour wave', welcome: 'Welcome sweep',
+    pulse: 'Sport pulse', cycle: 'Colour cycle', beat: 'Beat', drive: 'Follow driving' };
 const PERIOD = { 1: 1.6, 2: 1, 3: 0.55 };      // x the base time of each animation
+
+/* The palettes the colour cycle walks through: hue degrees, wrap-around allowed (warm goes
+ * 300 -> 420, so red comes up between the two ends rather than jumping back). */
+const PALETTES = { full: [0, 360], cool: [160, 300], warm: [300, 420], m: [240, 380] };
+const PALETTE_NAMES = { full: 'Every colour', cool: 'Cool', warm: 'Warm', m: 'M colours' };
+const CYCLE_MS = 24000;         // one turn through the palette, at speed 2
+const DEFAULT_BPM = 100;        // the beat's beats per minute when none is set
+const BEAT_FLOOR = 0.15;        // how dim a beat's light goes between two beats
+const REV = { idle: 800, max: 6500 };   // revs that read as idle and as flat out
+const FAST = 160;               // km/h that reads as flat out
+const PULL = 0.6;               // g that reads as all of it
+const clamp01 = (x) => Math.max(0, Math.min(1, x));
+const num = (x) => (typeof x === 'number' && isFinite(x) ? x : 0);
 
 function hsv(h, s, v) {
     const f = (n) => { const k = (n + h / 60) % 6; return v - v * s * Math.max(0, Math.min(k, 4 - k, 1)); };
@@ -72,9 +89,32 @@ function lightAt(scene, light, t) {
         // one long red: the lights are written one after the other, quick flashes would never reach them all
         return t < 1500 ? { rgb: [255, 0, 0], bright: 100 } : own;
     }
+    case 'cycle': {
+        // the palette walked once every CYCLE_MS x speed, the whole cabin the same hue at a time and
+        // each part its own brightness
+        const p = PALETTES[scene.palette] || PALETTES.full, f = (t / (CYCLE_MS * k)) % 1;
+        return { rgb: hsv(p[0] + (p[1] - p[0]) * f, 1, 1), bright: own.bright };
+    }
+    case 'beat': {
+        // a beat: on at once, then down until the next one. Quick flashes would never reach every
+        // light (one write each ~200 ms through the gateway), so the beat is the brightness itself
+        const period = 60000 / Math.max(30, Math.min(240, scene.bpm || DEFAULT_BPM)), x = (t % period) / period;
+        return { rgb: own.rgb, bright: Math.round(own.bright * (BEAT_FLOOR + (1 - BEAT_FLOOR) * Math.pow(1 - x, 2.2))) };
+    }
+    case 'drive': {
+        const c = scene.car || {}, src = scene.source || 'rev';
+        const rev = clamp01((num(c.rpm) - REV.idle) / (REV.max - REV.idle));
+        const fast = clamp01(num(c.speed) / FAST);
+        const pull = clamp01((Math.abs(num(c.gLat)) + Math.abs(num(c.gLong))) / PULL);
+        // g only brightens the look that is set; rev and speed walk blue (idle) to red (flat out)
+        if (src === 'g') return { rgb: own.rgb, bright: Math.round(own.bright * (0.35 + 0.65 * pull)) };
+        const f = src === 'speed' ? fast : rev;
+        return { rgb: hsv(210 * (1 - f), 1, 1), bright: Math.round(own.bright * (0.55 + 0.45 * f)) };
+    }
     default:
         return own;
     }
 }
 
-module.exports = { KINDS, NAMES, lightAt, lasts, moves, hsv, hueOf, snapHue, stepHue, hex, mix };
+module.exports = { KINDS, NAMES, lightAt, lasts, moves, hsv, hueOf, snapHue, stepHue, hex, mix,
+    PALETTES, PALETTE_NAMES, CYCLE_MS, DEFAULT_BPM, BEAT_FLOOR };

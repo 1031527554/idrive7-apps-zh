@@ -20,8 +20,10 @@
 |---|---|---|---|
 | 1 | `mgu-repo.json` | 用 `components: [...]` **逐条列出 15 个应用**（上游是 `apps: {"path": "apps/*"}` 单条 pattern），每条带 `title`/`description`/`texts['zh-CN']`；`build.args` 改为 `["{id}", "--language", "zh-CN"]` | ① 让车机侧构建中文；② 让 Store 列表显示中文名（`sources.js` 的 `pick()` 优先取本条目的值，`catalog.js` 的 `textsOf()` 接受 `zh-CN`）。pattern 形式无法逐 app 给不同文案 |
 | 2 | `kit/tools/localize.py` | 两处：`package_version()` **只对 `zh-CN`** 返回原版本（不再追加 `-zh.cn.<rev>`）；`load_locale()` 为 `zh-CN` **合并 fork 补充表**（上游条目优先） | 前者：Store 目录校验只接受 `x.y.z`（`catalog.js` 的 `SEMVER`），deploy 工具也按 `preinstalled_apps/<id>@<x.y.z>.tgz` 命名（`mgu-deploy.js:5382`），带后缀的包**既不能发布也不能安装**。后者：上游语料没跟上的界面文案先用补充表填上 |
-| 3 | `fork-tools/`（新增） | `gen_mgu_repo.py`（重建清单）、`sync_upstream.py`（一键同步）、`zh-CN-descriptions.json`（Store 列表描述）、`zh-CN-supplement.json`（上游语料未覆盖的界面中文） | 上游升级后一条命令重建；补充表不改上游语料、同步自动保留 |
+| 3 | `fork-tools/`（新增） | `gen_mgu_repo.py`（重建清单）、`sync_upstream.py`（一键同步）、`keep.json`（**保护路径**）、`test_sync_keep.py`（保护机制的验收脚本）、`zh-CN-descriptions.json`（Store 列表描述）、`zh-CN-supplement.json`（上游语料未覆盖的界面中文） | 上游升级后一条命令重建；补充表不改上游语料、同步自动保留 |
 | 4 | `mgu-repo.json.upstream`（新增） | 上游原始清单，供生成脚本读取 | 便于对照与回滚 |
+| 5 | `apps/ambient_config/`（**受保护**） | 新增三种自动动画：**循环变色 / 节拍 / 随驾驶变化**（转速、车速、G 值），Animations 页重排为 8 项并各自的参数行；`app.json` 增加车辆信号权限与 `demo` 设置。详见 `apps/ambient_config/FORK.md` | 车主需求；该目录列入 `fork-tools/keep.json`，**同步不会覆盖**（只会上报上游改动供人工合并） |
+| 6 | `kit/tools/test_ambient_auto.js`（新增） | 上述三种动画的测试（27 项） | 测试文件不随构建上车 |
 
 `build`/`requires`/`mguHmi`/`tools` 的值**全部照抄上游**（`python: kit/tools/build.py`、`sdk: oap-sdk`、
 `output: dist/{id}@{version}.tgz`、`requires: {idrive7-renderd: 2.1.7, mgu-inputgate: 1.0.0}`），未自行发明。
@@ -58,10 +60,12 @@
 
 ## 限制与已知问题
 
-- **翻译覆盖**：2026-11-11 为 **661/753（87%）**（同日加补充表前是 73%，11-09 为 80%，11-07 为 90%）。
+- **翻译覆盖**：2026-11-11 为 **673/757（88%）**（同日加补充表前是 73%，11-09 为 80%，11-07 为 90%）。
   上游自 2026-11-09 起**没有更新** `kit/runtime/locales/zh-CN.json`，而 `redline` 从 128 条涨到 188 条；
   `redline` 现在 **166/188**，剩下 22 条是单位符号、字体名与纯温度值（`km/h`、`Nm`、`bar`、`Ubuntu`、
   `60 °C (140 °F)` 等）——**这些在任何语言里都应保持原样**，故有意不译。
+  `ambient_config` 现在是 **18/18 满载**：它的设置页原本有 8 条英文（`Dimmer at night`、
+  `My colour back at each start`、`Left`/`Right` 等）上游语料里没有，已由本 fork 的补充表补上。
   `service`、`warmup`、`dtc_scanner` 满载；`car_vitals`、`dyno`、`edrive`、`live_data`、`live_adjustments`
   剩余的也基本是单位与缩写，不算遗漏。
   上游译者补齐语料后重新同步即可：**上游条目始终优先**，被上游覆盖的补充表键会让位。
@@ -78,6 +82,10 @@
 上游一有更新就跑这三步（`fork-tools/sync_upstream.py` 会做"覆盖为上游树 → **删除上游已移除的文件** →
 保留本 fork 的文件 → **重贴 `localize.py` 里所有被改动过的顶层函数**（目前是 `load_locale()` 与
 `package_version()`）→ 刷新 `mgu-repo.json.upstream` → 重新生成 `mgu-repo.json`"）：
+
+> **保护路径**：`fork-tools/keep.json` 里列的路径（目前是 `apps/ambient_config/`）**永不被覆盖也不被删除**，
+> 上游对这些路径的改动只会被**列出来**（新增/修改/删除）供人工合并。`keep.json` 缺失时脚本会拒绝同步，
+> 不会静默回到旧语义。破坏性验证可在 fork 副本上跑 `python fork-tools/test_sync_keep.py`。
 
 ```powershell
 # 1) 取上游当前 main 并解压
@@ -120,12 +128,20 @@ git add -A; git commit -m "sync upstream main"; git push
 
   ⇒ **只有 `zh-CN` 与上游不同**，`en`/`ru`/`ko` 逐字一致（早期版本曾把该函数整体替换，
   连 `ru`/`ko` 的后缀一并去掉，已收窄为只处理 `zh-CN`）。
-- **本地化 dry-run**：14 个应用逐条本地化，界面字符串 577 条译出 522 条（90%）；未译项为
-  `km/h`、`mph`、`Nm`、`PS`、`bar/psi`、货币代码等上游有意保留的单位与缩写。
-- **整树差异**（与上游快照逐文件比对）= 新增 4（`FORK-NOTES.md`、`fork-tools/` 两个文件、
-  `mgu-repo.json.upstream`）+ 修改 2（`mgu-repo.json`、`kit/tools/localize.py`）+ 删除 0；
-  `kit/tools/build.py`、`LICENSE`、`NOTICE.zh-CN.md`、`apps/*`、`kit/runtime/locales/zh-CN.json`
-  等与上游**逐字节相同**。
+- **本地化 dry-run**：15 个应用逐条本地化，界面字符串 **757 条译出 673 条（88%）**（明细见上文"限制"）。
+- **应用自带测试**（`node kit/tools/test_*.js`）：`test_ambient_auto.js`（本 fork 新增，27 项）与
+  `test_ambient_config.js`（21 项）全部通过；`test_ambient_rgb.js` 53 项中有 1 项
+  （`rainbow: the whole car one colour, 2 writes a frame`）为**上游自带的竞态断言**——
+  在上游原版快照上同样稳定失败（各 3/3 次），与本 fork 的改动无关。
+- **整树差异**（与上游快照逐文件比对）= **新增 10 + 修改 6 + 删除 0**：
+  新增 `FORK-NOTES.md`、`apps/ambient_config/FORK.md`、`fork-tools/{gen_mgu_repo,sync_upstream,keep,test_sync_keep}`、
+  `fork-tools/zh-CN-{descriptions,supplement}.json`、`kit/tools/test_ambient_auto.js`、`mgu-repo.json.upstream`；
+  修改 `apps/ambient_config/{app.json,control.js,main.js,scenes.js}`、`kit/tools/localize.py`、`mgu-repo.json`。
+  `kit/tools/build.py`、`apps/ambient_config/lights.js`、`kit/runtime/**`、`LICENSE`、`NOTICE.zh-CN.md`、
+  `kit/runtime/locales/zh-CN.json` 等与上游**逐字节相同**。
+- **保护路径机制**（`fork-tools/keep.json`）：由另一位队友实现并独立验收（20/20 通过）：在 fork
+  **副本**上模拟"上游改/删/增保护目录里的文件"→ 保护内容零改动、上游改动被逐条列出；真 fork 上跑
+  幂等同步，前后全树 680 个文件逐字节不变；缺 `keep.json` 时脚本拒绝同步（不静默降级）。
 - **独立只读复核**（另一个 agent，未参与本 fork 编写）：结论 **无 BLOCKER，可安全公开推送** ——
   已跟踪的 611 个文件里无 VIN、无私钥、无 `oap-sdk/`、无 `dist/`、无 token、无本机用户名/绝对路径；
   并独立复算了上述解析与整树差异。

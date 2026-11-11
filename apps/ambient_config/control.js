@@ -11,6 +11,9 @@
  * Settings: follow (looks by driving mode), welcome (a sweep at each start), sportPulse (red for 1.5 s when
  * Sport is picked), nightDim (half the brightness at night), keep (the look back at each start), flashAlerts
  * (Redline's shift flash and other apps', from the file FLASH_FILE: { rgb, ms } written whole).
+ *
+ * The live car values (main.js, kit/car.js: rpm, speed, gLat, gLong) are held in `car` and attached to every
+ * scene, so a 'drive' scene follows them as they change, with no settings write and no re-show.
  */
 const fs = require('fs');
 
@@ -25,6 +28,7 @@ const valid = (l) => !!l && typeof l === 'object' && !!l.upper && Array.isArray(
 class Control {
     constructor(o) {
         this.settings = o.settings; this.lights = o.lights; this.ambient = o.ambient; this.log = o.log;
+        this.car = o.car || {};                    // the live values a 'drive' scene reads
         this._mode = null; this._night = false; this._shown = null; this._flashAt = 0; this._poll = null;
     }
 
@@ -75,11 +79,14 @@ class Control {
         if (t.look) this._show(t.look); else { this._shown = null; this.lights.carColour(); }
     }
 
+    /** The live car values are attached, not persisted: a 'drive' scene reads them as they change, and
+     * the "already on" key leaves them out (they change without the look changing, and re-showing the
+     * scene each sample would restart its frame). */
     _show(scene) {
-        const key = JSON.stringify(scene);
+        const key = JSON.stringify(scene, (k, v) => (k === 'car' ? undefined : v));
         if (key === this._shown && this.lights.scene) return;
         this._shown = key;
-        this.lights.show(scene);
+        this.lights.show(Object.assign({}, scene, { car: this.car }));
     }
 
     /** By hand: change the driver's look (a part of it) and put it on. */

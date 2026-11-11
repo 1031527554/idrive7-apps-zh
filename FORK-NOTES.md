@@ -10,8 +10,9 @@
 
 - 已发布：**https://github.com/1031527554/idrive7-apps-zh**（公开，分支 `main`）
 - 真车结果（车主 2026-11-09 确认）：**当时 14 个应用全部经 Store 从本源自建并安装成功，界面均为中文**
-- 2026-11-09 已同步上游：现在共 **15 个应用**（新增 `ambient_config 1.1.0`；另有 4 个升级：
-  `edrive 2.8.3`、`live_adjustments 0.9.0`、`redline 1.15.2`、`service 1.6.0`）。新增的这个应用**尚未上车验证**
+- 上游同步：2026-11-09 加入 `ambient_config`；**2026-11-11 再次同步，15 个应用全部升级**
+  （`redline 2.0.20` 含整套 HUD、`ambient_config 2.0.4`、`dyno 1.6.1` 等）。
+  **2026-11-11 这批升级尚未上车验证**
 
 ## 与上游的差异（只有这些）
 
@@ -57,11 +58,13 @@
 
 ## 限制与已知问题
 
-- **翻译覆盖率随上游功能增长而下降**：2026-11-09 同步后，691 条界面字符串译出 559 条（80%）。
-  `ambient_config`、`service`、`warmup`、`dtc_scanner` 等为满载；`edrive`、`live_adjustments` 剩余的是单位
-  （`0 %`、`2,500 rpm`）；但 **`redline` 只剩 56/128** —— 上游新加的 HUD/仪表设置
-  （`80s digital dash`、`Boost unit`、`Burst (pops, ring)`…）中文语料尚未覆盖，这些条目在应用里会显示英文，
-  等上游译者补齐后重新同步即可。上游有意保留的单位与缩写（`km/h`、`Nm`、货币代码等）不算遗漏。
+- **翻译覆盖率随上游功能增长而持续下降**：2026-11-11 同步后 **555/753（73%）**
+  （11-09 为 80%，11-07 为 90%）。上游自 2026-11-09 起**没有更新** `kit/runtime/locales/zh-CN.json`，
+  而 `redline` 的界面字符串从 128 条涨到 **188 条**（只译出 60 条）。
+  `service`、`warmup`、`dtc_scanner` 为满载；`car_vitals`、`dyno`、`edrive`、`live_data`、`live_adjustments`
+  剩余的基本是单位与缩写（`bar/psi`、`Nm`、`0 %`、`2,500 rpm`、货币代码…），**不算遗漏**；
+  `redline` 新加的 HUD/仪表设置（`80s digital dash`、`12 V battery charge (%)`…）在应用里会显示英文。
+  等上游译者补齐语料后重新同步即可改善；也可用 fork 本地补充表先填（见下条）。
 - 翻译由上游署名译者提供，**机器辅助、未逐句人工审校**（见 `docs/diagnostic-chinese.md`）；
   故障库说明可能存在术语错误。
 - 本 fork **新增**的只有 `fork-tools/zh-CN-descriptions.json` 里的 14 条"列表描述"（Store 列表用），
@@ -72,8 +75,8 @@
 
 ## 同步上游更新
 
-上游一有更新就跑这三步（`fork-tools/sync_upstream.py` 会做"覆盖为上游树 → 保留本 fork 的文件 →
-重贴 `localize.py` 补丁 → 刷新 `mgu-repo.json.upstream` → 重新生成 `mgu-repo.json`"）：
+上游一有更新就跑这三步（`fork-tools/sync_upstream.py` 会做"覆盖为上游树 → **删除上游已移除的文件** →
+保留本 fork 的文件 → 重贴 `localize.py` 补丁 → 刷新 `mgu-repo.json.upstream` → 重新生成 `mgu-repo.json`"）：
 
 ```powershell
 # 1) 取上游当前 main 并解压

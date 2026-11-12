@@ -102,6 +102,25 @@ python fork-tools/check_glyphs.py --atlas kit/runtime/fonts/cjk.json  # 必须 0
 - 运行时翻译器对**短语替换只处理 ≥4 字符的键**（`kit/runtime/i18n.js:35`），所以 `Red` 这类短词只有在"整串精确命中"时才翻译。应用里拼接出来的句子（如 `Upper: Red, 80%`）因此改为用 `require('./kit/i18n').t()` **逐片段翻译**并让 `cv.text` 走 `literal`。
 - 图集是**打进每个应用包**的（构建时复制 `kit/runtime`），所以修好图集后，车机上已装的每个应用都要**重新构建/更新**才会生效。
 
+**几个必须知道的细节（2026-11-12 实测得出）**
+
+- **图集是整块重渲染，不是"旧图集 + 加字"**：fork 版烘焙（Pillow 11.3.0 + 固定字体）与上游提交的图集
+  存在 <0.4 px 级度量漂移（旧图集来自另一套 FreeType/字体构建）。真车上建议目视确认一次文本宽度与居中
+  没有肉眼可见变化。另：**若上游自己重烘，他们会落在 48 号字**（更大）；我们用 44 号，字号不同属预期。
+- **字体 SHA-256 常量有两份**：上游 `kit/tools/bake_cjk.py:20` 与 `fork-tools/bake_cjk_fork.py`。
+  Google 重发 NotoSansSC 时两处都要更新，否则两边烘出的图集不一致（校验失败会硬停，安全但会阻塞）。
+- **Pillow 版本会影响是否降级**：1839 px 距上限 2048 只剩 209 px（≈80–100 个字形）。换机器 / 换 Pillow
+  可能直接掉到 40 号（**所有应用**的中文一起变小）。**不要跨环境 diff 图集文件**，只比覆盖率；
+  烘焙脚本会打印试过的每个字号与高度，以及 `DOWNGRADE:` 警告。
+- **审计范围**：`check_glyphs.py` 只看 `zh-CN.json` + 补充表两处文本；直接写在 app JS 里的中文不在审计内
+  （缺字照样画 `?`）。提交前请连同 i18n 离线仿真一起跑（`research/simulate_i18n.js`，用 kit 自己的翻译器
+  跑真实绘制字符串）。
+- **`dtc_scanner` 用另一张图集**：`kit/localization/fonts/diagnostic-zh-CN.json`（32 号、1620 字形，上游烘焙，
+  本 fork 暂无对应版本）。目前补充表中出现在 `apps/dtc_scanner/**` 的 6 条对它 0 缺字；若以后新增由
+  Fault Scanner 绘制的文案，需要同样做一份 fork 版。
+- **同步后**：`sync_upstream.py` 在检测到上游改过 `zh-CN.json` 时会**打印重烘提示**（图集在 `keep.json` 里
+  受保护，不会被覆盖，所以不会"悄悄过期"）。
+
 ## 版本号约定
 
 `apps/ambient_config/app.json` 的版本在本 fork 里会在**补丁位自增**（上游 2.0.4 → 本 fork 2.0.5），这样车机能经 Store 正常收到更新（同版本 Store 不会重建）。同步上游时若上游版本更高，以上游为准，然后我们再自增。

@@ -13,7 +13,7 @@ directory); a relative --atlas is taken from the current directory first, then f
 the fork root:
     python fork-tools/check_glyphs.py --atlas fork-tools/out/cjk.json
 Exit status is 0 when nothing is missing, 1 when a character is missing, 2 when
-the atlas cannot be read. ASCII is never reported: the baker always includes it.
+the atlas cannot be read. ASCII is checked as well: a truncated atlas must not pass.
 """
 import argparse
 import json
@@ -54,14 +54,19 @@ def main():
     except ValueError:
         pass
     print(f'atlas: {shown}')
+    real = set(covered)                      # what the atlas really has, before ASCII is assumed
+    ascii_missing = [c for c in range(0x20, 0x7f) if c not in real]
     if sizes:
         print(f'       {len(sizes)} size(s) {[s.get("size") for s in sizes]}, {len(covered)} glyphs, '
               f'{sizes[0].get("atlasW")}x{sizes[0].get("atlasH")} px, source {atlas.get("source")}')
     else:
         print('       no sizes - nothing is covered')
     print(f'       family {atlas.get("family")}, cacheKey {atlas.get("cacheKey")}')
+    if ascii_missing:
+        print(f'       ASCII glyphs missing: {len(ascii_missing)} '
+              f'({"".join(chr(c) for c in ascii_missing[:24])}) - the atlas is truncated')
 
-    # ASCII is always in the atlas (baker.TEXT), so it is never reported missing
+    # ASCII is expected (baker.TEXT) but not assumed: a truncated atlas must not pass
     covered |= set(range(0x20, 0x7f))
 
     def missing(text):
@@ -90,9 +95,10 @@ def main():
     print(f'\nunion of characters this fork needs and the atlas lacks: {len(all_missing)}')
     print(''.join(sorted(all_missing)))
 
-    if cat_missing or sup_missing:
-        print('\nFAIL: the atlas does not cover all Chinese text (missing characters draw as "?"). '
-              'Re-bake with fork-tools/bake_cjk_fork.py.')
+    if cat_missing or sup_missing or ascii_missing:
+        print('\nFAIL: the atlas does not cover all the text that is drawn '
+              f'({len(all_missing)} Chinese character(s) and {len(ascii_missing)} ASCII glyph(s) missing; '
+              'a missing glyph draws as "?"). Re-bake with fork-tools/bake_cjk_fork.py.')
         return 1
     print('\nOK: the atlas covers every Chinese character of the upstream catalog and the fork supplement.')
     return 0

@@ -239,3 +239,25 @@ if old:
 
 # 6. regenerate the fork manifest
 subprocess.run([sys.executable, str(fork / 'fork-tools/gen_mgu_repo.py'), str(fork)], check=True)
+
+# 7. the atlas is baked from the upstream catalog plus this fork's supplement. The sync
+#    protects kit/runtime/fonts/cjk.json on purpose, so it never becomes stale silently:
+#    when upstream's Chinese catalog changed, say what to re-run.
+CATALOG = 'kit/runtime/locales/zh-CN.json'
+
+
+def catalog_changed():
+    if not old:
+        return True
+    try:
+        return (old / CATALOG).read_bytes() != (new / CATALOG).read_bytes()
+    except OSError:
+        return True
+
+
+if catalog_changed():
+    print('\nNOTE: upstream\'s ' + CATALOG + ' changed (or no <old> baseline was given), so the baked')
+    print('      glyph atlas may be stale. It is protected from this sync on purpose - re-bake it:')
+    print('        python fork-tools/bake_cjk_fork.py')
+    print('        copy fork-tools\\out\\cjk.json kit\\runtime\\fonts\\cjk.json')
+    print('        python fork-tools/check_glyphs.py --atlas kit/runtime/fonts/cjk.json   (must be 0 missing)')

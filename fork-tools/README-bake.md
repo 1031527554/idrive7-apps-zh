@@ -63,8 +63,9 @@ local one. Above 32 px the script refuses to publish rather than exceed the budg
 
 ## Notes
 
-* `fork-tools/out/` holds generated atlases and is not committed; only
-  `kit/runtime/fonts/cjk.json` is the published atlas.
+* `fork-tools/out/` is scratch: it holds generated atlases, test output and the
+  checks used while building this flow. Only `kit/runtime/fonts/cjk.json` is the
+  published atlas, so keep `fork-tools/out/` out of git (add it to `.gitignore`).
 * The separate Fault Scanner atlas (`kit/localization/fonts/diagnostic-zh-CN.json`)
   is still baked by upstream's `python kit/tools/bake_cjk.py --diagnostic`. Its
   32 px atlas currently covers the few supplement strings that app draws; if you

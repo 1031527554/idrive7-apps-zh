@@ -209,5 +209,7 @@
   "It shows whenever Eco Pro is on.": "节能模式开启时显示。",
   "It shows whenever Adaptive is on.": "自适应模式开启时显示。",
   "It shows whenever Hybrid is on.": "混合动力模式开启时显示。",
-  "It shows whenever Electric is on.": "纯电模式开启时显示。"
+  "It shows whenever Electric is on.": "纯电模式开启时显示。",
+  "Another ambient app": "另一个氛围灯应用",
+  "IterioDev's Comfort tool is running. It changes the ambient lights too, so the colours jump between the two apps. Uninstall it in the Store (Installed, Head-unit tools, Comfort) and use one ambient app at a time.": "IterioDev 的 Comfort 工具正在运行。它也会写入同一组氛围灯，两个应用的颜色会互相干扰。请在商店的「已安装 → 车机工具」里卸载 Comfort，氛围灯应用一次只留一个。"
 }

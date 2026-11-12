@@ -13,6 +13,8 @@
  * Everything goes to the car as it is picked. The lights are driven through the body controller (lights.js); a car
  * whose body controller does not answer keeps BMW's own colours (ambient.js), offered on the Colour tab.
  * It runs from the platform's start (app.json "autostart"): the look and the driving modes work with the app closed.
+ * With IterioDev's Comfort tool running (others.js), the Colour and Animations tabs warn that it writes the same
+ * lights and recommend uninstalling it: one ambient app at a time.
  */
 const mgu = require('./kit/mgu');
 const G = require('./kit/gauges');
@@ -23,6 +25,7 @@ const { Diag } = require('./kit/diag');
 const { Ambient, SLOTS } = require('./ambient');
 const { Lights } = require('./lights');
 const { Control } = require('./control');
+const { Others } = require('./others');
 const { drawCabin } = require('./cabin');
 const { sample } = require('./lin');
 const S = require('./scenes');
@@ -68,7 +71,8 @@ async function background(bg) {
         },
     }, log).catch((e) => log.warn('day / night: ' + (e && e.message || e)));
     settings.onChange((key) => { if (key === 'nightDim') control.night(control._night); if (key === 'follow') control.apply(); });
-    return { ambient, lights, control, live };
+    const others = new Others({ log }).start();
+    return { ambient, lights, control, live, others };
 }
 
 const nearest = (rgb) => {
@@ -85,7 +89,7 @@ mgu.run({
     background,
     async start(ctx) {
         const { ui, settings, log } = ctx;
-        const { ambient, lights, control, live } = ctx.background || await background(ctx);
+        const { ambient, lights, control, live, others } = ctx.background || await background(ctx);
         // editing: null (the driver's own look) or a driving mode whose look the Colour and Animations tabs change
         let page = 0, part = 'all', dirty = true, editing = null;
         const T0 = Date.now();
@@ -118,7 +122,33 @@ mgu.run({
         };
         const stepHue = (d) => { const c = partColour(look()); return setRgb(S.hsv(S.stepHue(S.hueOf(c.rgb), d), 1, 1)); };
 
+        // another ambient app's service writing the same lights: says so in place of the status, wrapped to width w.
+        // The paragraph is translated BEFORE it is wrapped: the wrapper cuts it into lines of its own, which the
+        // runtime dictionary could never match, and Chinese has no spaces to wrap on.
+        const COMFORT_WARNING = 'IterioDev\'s Comfort tool is running. It changes the ambient lights too, so the colours jump ' +
+            'between the two apps. Uninstall it in the Store (Installed, Head-unit tools, Comfort) and use one ambient app at a time.';
+        function wrapText(cv, text, size, w) {
+            const out = [];
+            let line = '';
+            for (const chunk of text.split(/(\s+)/)) {
+                if (!chunk) continue;
+                if (line && cv.textWidth((line + chunk).trim(), size) > w) { out.push(line.trim()); line = chunk; } else line += chunk;
+                while (cv.textWidth(line.trim(), size) > w) {            // a single CJK run longer than the width
+                    let i = 1;
+                    while (i < line.length && cv.textWidth(line.slice(0, i + 1).trim(), size) <= w) i++;
+                    out.push(line.slice(0, i).trim()); line = line.slice(i);
+                }
+            }
+            if (line.trim()) out.push(line.trim());
+            return out;
+        }
+        function warnOthers(cv, t, x, y, w) {
+            cv.text('Another ambient app', x, y, 22, t.warn, { font: 'bold' });
+            wrapText(cv, tr(COMFORT_WARNING), 18, w).forEach((line, i) =>
+                cv.text(line, x, y + 30 + i * 24, 18, t.text, { literal: true }));
+        }
         function status(cv, t, x, y) {
+            if (others.comfort) return warnOthers(cv, t, x, y, 1560 - x);
             const n = lights.lights.length;
             const s = lights.state === 'finding' ? 'Looking for the car\'s lights...'
                 : lights.state === 'none' ? 'The car\'s lights did not answer'
@@ -190,6 +220,7 @@ mgu.run({
                     { primary: n === now, busy: !ambient.available, key: 'slot-' + n });
             }
             G.button(cv, t, 796, 386, 0, 48, 'Look again', () => { lights.find(); return redraw(); }, { key: 'again' });
+            if (others.comfort) warnOthers(cv, t, 1346, 136, 214);
         }
 
         function drawAnimations(cv, t) {
@@ -248,7 +279,7 @@ mgu.run({
             if (editing) return editBar(cv, t, x);
             G.button(cv, t, x, 240, 0, 48, 'Original colour', () => { control.carColour(); return redraw(); }, { primary: !control.on(), key: 'car2' });
             status(cv, t, x, 330);
-            if (lights.state === 'ours' && S.moves(lights.scene)) cv.text(lights.rate.toFixed(0) + ' writes a second, ' + lights.fps.toFixed(1) + ' frames a second', x, 390, 18, t.dim);
+            if (!others.comfort && lights.state === 'ours' && S.moves(lights.scene)) cv.text(lights.rate.toFixed(0) + ' writes a second, ' + lights.fps.toFixed(1) + ' frames a second', x, 390, 18, t.dim);
         }
 
         function drawModes(cv, t) {
@@ -333,6 +364,7 @@ mgu.run({
         lights.on('change', () => { dirty = true; });
         ambient.on('change', () => { dirty = true; });
         settings.onChange(() => { dirty = true; });
+        others.on('change', () => { dirty = true; });
         ctx.loop('MAIN', 8, tick);
         render().then(() => log.info('first frame done')).catch((e) => log.warn('first render: ' + e));
     },

@@ -17,6 +17,7 @@
 const mgu = require('./kit/mgu');
 const G = require('./kit/gauges');
 const Car = require('./kit/car');
+const { t: tr } = require('./kit/i18n');
 const { withAlpha } = require('./kit/canvas');
 const { Diag } = require('./kit/diag');
 const { Ambient, SLOTS } = require('./ambient');
@@ -161,7 +162,9 @@ mgu.run({
             const x = 1150;
             [['Upper', l.upper], ['Lower', l.lower]].forEach(([n, v], i) => {
                 cv.roundRect(x, 104 + i * 40, 26, 26, 7, v.rgb);
-                cv.text(n + ': ' + nearest(v.rgb) + ', ' + v.bright + '%', x + 38, 124 + i * 40, 20, t.text);
+                // tr() per part, literal: a colour name that is short ("Red") is only
+                // translated when the whole drawn string is, which this one is not
+                cv.text(tr(n) + ': ' + tr(nearest(v.rgb)) + ', ' + v.bright + '%', x + 38, 124 + i * 40, 20, t.text, { literal: true });
             });
             if (editing) return editBar(cv, t, x);
             G.button(cv, t, x, 210, 268, 48, 'Original colour', () => { control.carColour(); return redraw(); }, { primary: !control.on(), key: 'car' });
@@ -203,7 +206,7 @@ mgu.run({
                 if (on) picked = d;
             });
             cv.text(picked, 44, 302, 18, picked ? t.text : t.dim);
-            cv.text('Speed', 44, 352, 20, t.dim);
+            cv.text('Animation speed', 44, 352, 20, t.dim);
             [[1, 'Slow'], [2, 'Normal'], [3, 'Fast']].forEach(([v, n], i) => {
                 G.button(cv, t, 130 + i * 130, 330, 120, 44, n, () => { setLook({ speed: v }); return redraw(); }, { primary: (l.speed || 2) === v, key: 'sp-' + v });
             });
@@ -239,7 +242,7 @@ mgu.run({
             const x = 1150;
             [['Upper', l.upper], ['Lower', l.lower]].forEach(([n, v], i) => {
                 cv.roundRect(x, 104 + i * 40, 26, 26, 7, v.rgb);
-                cv.text(n + ': ' + nearest(v.rgb), x + 38, 124 + i * 40, 20, t.text);
+                cv.text(tr(n) + ': ' + tr(nearest(v.rgb)), x + 38, 124 + i * 40, 20, t.text, { literal: true });
             });
             cv.text('Colours: on the Colour tab', x, 214, 18, t.dim);
             if (editing) return editBar(cv, t, x);
@@ -293,7 +296,7 @@ mgu.run({
                 }
                 cv.roundRect(x + 24, y + 24, 120, 66, 14, f.upper.rgb);
                 cv.roundRect(x + 24, y + 98, 120, 66, 14, f.lower.rgb);
-                cv.text(nearest(f.upper.rgb) + (nearest(f.lower.rgb) !== nearest(f.upper.rgb) ? ' / ' + nearest(f.lower.rgb) : ''), x + 166, y + 60, 26, t.text, { font: 'bold' });
+                cv.text(tr(nearest(f.upper.rgb)) + (nearest(f.lower.rgb) !== nearest(f.upper.rgb) ? ' / ' + tr(nearest(f.lower.rgb)) : ''), x + 166, y + 60, 26, t.text, { font: 'bold', literal: true });
                 cv.text(S.NAMES[f.kind] + ', ' + f.upper.bright + '%', x + 166, y + 94, 20, t.dim);
                 if (cv.target) cv.target(x, y, 340, 190, () => { control.useFav(i); return redraw(); }, 'fav-' + i);
                 G.button(cv, t, x + 360, y + 130, 116, 44, 'Delete', () => { control.dropFav(i); return redraw(); }, { key: 'del-' + i, confirm: true });

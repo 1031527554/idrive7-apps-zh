@@ -24,6 +24,8 @@
 | 4 | `mgu-repo.json.upstream`（新增） | 上游原始清单，供生成脚本读取 | 便于对照与回滚 |
 | 5 | `apps/ambient_config/`（**受保护**） | 新增三种自动动画：**循环变色 / 节拍 / 随驾驶变化**（转速、车速、G 值），Animations 页重排为 8 项并各自的参数行；`app.json` 增加车辆信号权限与 `demo` 设置。详见 `apps/ambient_config/FORK.md` | 车主需求；该目录列入 `fork-tools/keep.json`，**同步不会覆盖**（只会上报上游改动供人工合并） |
 | 6 | `kit/tools/test_ambient_auto.js`（新增） | 上述三种动画的测试（27 项） | 测试文件不随构建上车 |
+| 7 | `kit/runtime/fonts/cjk.json`（**受保护**） | 本 fork **自己烘焙**的中文字形图集（958 字形、1024×1839 px、44 号字）：把上游语料 + 本 fork 补充表的字一起烘进去 | 上游的 `bake_cjk.py` 只烘 `zh-CN.json` 里的字，本 fork 的译文缺字会画成 `?`。见下节"中文是怎么显示的" |
+| 8 | `fork-tools/bake_cjk_fork.py`、`check_glyphs.py`、`README-bake.md`（新增） | fork 版烘焙流水线与缺字检查 | 上游改语料或我方改补充表后，一条命令重新烘焙 |
 
 `build`/`requires`/`mguHmi`/`tools` 的值**全部照抄上游**（`python: kit/tools/build.py`、`sdk: oap-sdk`、
 `output: dist/{id}@{version}.tgz`、`requires: {idrive7-renderd: 2.1.7, mgu-inputgate: 1.0.0}`），未自行发明。
@@ -77,7 +79,34 @@
 - 与上游版本会分叉：上游升级后需 `git pull` 并重跑生成脚本。
 - `.github/workflows/` 保留上游 CI（含需要 Docker 的 renderd 构建）；在 fork 上失败属正常，不影响本用途。
 
-## 同步上游更新
+## 中文是怎么显示的（两个独立的坑）
+
+车机上"英文残留"和"`?` 乱码"是**两个不同**的问题，本 fork 两边都要自己解决：
+
+| 症状 | 原因 | 本 fork 的做法 |
+|---|---|---|
+| 还是英文 | 该字符串不在 `kit/runtime/locales/zh-CN.json` 里，而 kit 的运行时翻译只查这份词典 | 译文进 `fork-tools/zh-CN-supplement.json`，构建时由 `localize.load_locale()` 合并（**上游条目优先**） |
+| `?` 方框 | canvas 文字用预烘**字形图集** `kit/runtime/fonts/cjk.json` 绘制，缺字回退成 `?`（`kit/runtime/fonts.js:47` → `glyphs[63]`）。上游烘焙脚本 `kit/tools/bake_cjk.py` **只烘 `zh-CN.json` 里的字**，本 fork 补充表的字没有字形 | 用 `fork-tools/bake_cjk_fork.py` 把**上游语料 + 补充表**一起烘焙；产物 `cjk.json` 已列入 `keep.json` |
+
+**维护规则（重要）**：只要**改了补充表**，或**同步后上游改了 `zh-CN.json`**，就必须重新烘焙：
+
+```powershell
+python fork-tools/bake_cjk_fork.py                                    # 烘到 fork-tools/out/cjk.json
+copy fork-tools\out\cjk.json kit\runtime\fonts\cjk.json
+python fork-tools/check_glyphs.py --atlas kit/runtime/fonts/cjk.json  # 必须 0 缺字
+```
+
+预算：图集高度上限 **2048 px**，超出会自动降字号（48→44→40→36→32），那会让**所有应用**的中文一起变小。当前 1839 px（44 号字），余量约 200 px ≈ 100 个字形。
+
+补充两点：
+- 运行时翻译器对**短语替换只处理 ≥4 字符的键**（`kit/runtime/i18n.js:35`），所以 `Red` 这类短词只有在"整串精确命中"时才翻译。应用里拼接出来的句子（如 `Upper: Red, 80%`）因此改为用 `require('./kit/i18n').t()` **逐片段翻译**并让 `cv.text` 走 `literal`。
+- 图集是**打进每个应用包**的（构建时复制 `kit/runtime`），所以修好图集后，车机上已装的每个应用都要**重新构建/更新**才会生效。
+
+## 版本号约定
+
+`apps/ambient_config/app.json` 的版本在本 fork 里会在**补丁位自增**（上游 2.0.4 → 本 fork 2.0.5），这样车机能经 Store 正常收到更新（同版本 Store 不会重建）。同步上游时若上游版本更高，以上游为准，然后我们再自增。
+
+
 
 上游一有更新就跑这三步（`fork-tools/sync_upstream.py` 会做"覆盖为上游树 → **删除上游已移除的文件** →
 保留本 fork 的文件 → **重贴 `localize.py` 里所有被改动过的顶层函数**（目前是 `load_locale()` 与
@@ -139,6 +168,13 @@ git add -A; git commit -m "sync upstream main"; git push
   修改 `apps/ambient_config/{app.json,control.js,main.js,scenes.js}`、`kit/tools/localize.py`、`mgu-repo.json`。
   `kit/tools/build.py`、`apps/ambient_config/lights.js`、`kit/runtime/**`、`LICENSE`、`NOTICE.zh-CN.md`、
   `kit/runtime/locales/zh-CN.json` 等与上游**逐字节相同**。
+- **中文显示（2026-11-12 加）**：
+  - **i18n 离线仿真**（`research/simulate_i18n.js`，用 kit 自己的 `i18n.js` + 构建时同样的词典合并规则）：
+    ambient_config 的 **94 条真实绘制字符串（含运行时拼接的句子）0 条残留英文**。
+  - **字形覆盖**：`fork-tools/check_glyphs.py` 报 **0 缺字**（上游语料 + 本 fork 补充表）；
+    图集 **958 字形、1024×1839 px、44 号字**（预算 2048，未降级）。
+  - 修复前：补充表 128 条中有 37 条缺字形、`Colour`/`Speed` 等键与其它应用语义冲突（已改为"颜色"、
+    并把动画速度的代码字符串改为 `Animation speed`），车机上表现为 `?` 与英文残留。
 - **保护路径机制**（`fork-tools/keep.json`）：由另一位队友实现并独立验收（20/20 通过）：在 fork
   **副本**上模拟"上游改/删/增保护目录里的文件"→ 保护内容零改动、上游改动被逐条列出；真 fork 上跑
   幂等同步，前后全树 680 个文件逐字节不变；缺 `keep.json` 时脚本拒绝同步（不静默降级）。

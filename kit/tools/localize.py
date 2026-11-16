@@ -95,8 +95,8 @@ def localize_spec(spec, language):
     return s
 
 
-def unicode_resources(ui, strings, language='en'):
-    """Localize static resources; give initial Text cells stable Unicode StringIds."""
+def unicode_resources(ui, strings, language='en', prefix='SID_CN_STATIC_'):
+    """Localize static resources; give initial Text cells stable Unicode StringIds (prefix + a number)."""
     words = load_locale(language)
     counter = [0]
 
@@ -104,7 +104,7 @@ def unicode_resources(ui, strings, language='en'):
         if isinstance(obj, dict):
             value = obj.get('value')
             if obj.get('type') == 'Text' and isinstance(value, str) and value:
-                sid = 'SID_CN_STATIC_%04d' % counter[0]
+                sid = prefix + '%04d' % counter[0]
                 counter[0] += 1
                 strings[sid] = value
                 obj.update(value=sid, type='StringId')

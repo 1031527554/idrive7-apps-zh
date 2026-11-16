@@ -14,13 +14,6 @@
           "description": "氛围灯任意颜色、动态灯效，以及每种驾驶模式对应的一套灯光观感"
         }
       },
-      "mguHmi": [
-        "ID7"
-      ],
-      "requires": {
-        "idrive7-renderd": "2.1.7",
-        "mgu-inputgate": "1.0.0"
-      },
       "build": {
         "python": "kit/tools/build.py",
         "args": [
@@ -44,7 +37,15 @@
           "kit/tools/oapgen",
           "oap-sdk"
         ]
-      }
+      },
+      "requires": {
+        "idrive7-renderd": "2.1.18",
+        "mgu-inputgate": "1.1.0"
+      },
+      "mguHmi": [
+        "ID7",
+        "ID8"
+      ]
     },
     {
       "id": "brake_test",
@@ -59,13 +60,6 @@
           "description": "100–0 与 200–0 制动距离、峰值减速度，以及制动热衰退跟踪"
         }
       },
-      "mguHmi": [
-        "ID7"
-      ],
-      "requires": {
-        "idrive7-renderd": "2.1.7",
-        "mgu-inputgate": "1.0.0"
-      },
       "build": {
         "python": "kit/tools/build.py",
         "args": [
@@ -89,7 +83,15 @@
           "kit/tools/oapgen",
           "oap-sdk"
         ]
-      }
+      },
+      "requires": {
+        "idrive7-renderd": "2.1.18",
+        "mgu-inputgate": "1.1.0"
+      },
+      "mguHmi": [
+        "ID7",
+        "ID8"
+      ]
     },
     {
       "id": "car_vitals",
@@ -104,13 +106,6 @@
           "description": "实时发动机、热管理、进气/燃油/点火、轮胎与底盘仪表"
         }
       },
-      "mguHmi": [
-        "ID7"
-      ],
-      "requires": {
-        "idrive7-renderd": "2.1.7",
-        "mgu-inputgate": "1.0.0"
-      },
       "build": {
         "python": "kit/tools/build.py",
         "args": [
@@ -134,7 +129,15 @@
           "kit/tools/oapgen",
           "oap-sdk"
         ]
-      }
+      },
+      "requires": {
+        "idrive7-renderd": "2.1.18",
+        "mgu-inputgate": "1.1.0"
+      },
+      "mguHmi": [
+        "ID7",
+        "ID8"
+      ]
     },
     {
       "id": "doom",
@@ -149,13 +152,6 @@
           "description": "在 iDrive 上运行 Doom（Freedoom：第一章）。主菜单含全部设置；游戏以全屏完整分辨率绘制，用 iDrive 控制器操作；BACK 返回菜单并保存进度"
         }
       },
-      "mguHmi": [
-        "ID7"
-      ],
-      "requires": {
-        "idrive7-renderd": "2.1.7",
-        "mgu-inputgate": "1.0.0"
-      },
       "build": {
         "python": "kit/tools/build.py",
         "args": [
@@ -179,7 +175,15 @@
           "kit/tools/oapgen",
           "oap-sdk"
         ]
-      }
+      },
+      "requires": {
+        "idrive7-renderd": "2.1.18",
+        "mgu-inputgate": "1.1.0"
+      },
+      "mguHmi": [
+        "ID7",
+        "ID8"
+      ]
     },
     {
       "id": "draggy",
@@ -194,13 +198,6 @@
           "description": "0–100、100–200 与 1/4 英里计时，并记录最佳成绩"
         }
       },
-      "mguHmi": [
-        "ID7"
-      ],
-      "requires": {
-        "idrive7-renderd": "2.1.7",
-        "mgu-inputgate": "1.0.0"
-      },
       "build": {
         "python": "kit/tools/build.py",
         "args": [
@@ -224,7 +221,15 @@
           "kit/tools/oapgen",
           "oap-sdk"
         ]
-      }
+      },
+      "requires": {
+        "idrive7-renderd": "2.1.18",
+        "mgu-inputgate": "1.1.0"
+      },
+      "mguHmi": [
+        "ID7",
+        "ID8"
+      ]
     },
     {
       "id": "dtc_scanner",
@@ -239,13 +244,6 @@
           "description": "读取并清除各控制单元的故障存储，并显示当前 Check Control 提示信息"
         }
       },
-      "mguHmi": [
-        "ID7"
-      ],
-      "requires": {
-        "idrive7-renderd": "2.1.7",
-        "mgu-inputgate": "1.0.0"
-      },
       "build": {
         "python": "kit/tools/build.py",
         "args": [
@@ -269,7 +267,15 @@
           "kit/tools/oapgen",
           "oap-sdk"
         ]
-      }
+      },
+      "requires": {
+        "idrive7-renderd": "2.1.18",
+        "mgu-inputgate": "1.1.0"
+      },
+      "mguHmi": [
+        "ID7",
+        "ID8"
+      ]
     },
     {
       "id": "dyno",
@@ -284,13 +290,6 @@
           "description": "由全油门加速拉出功率与扭矩曲线，可保存并对比"
         }
       },
-      "mguHmi": [
-        "ID7"
-      ],
-      "requires": {
-        "idrive7-renderd": "2.1.7",
-        "mgu-inputgate": "1.0.0"
-      },
       "build": {
         "python": "kit/tools/build.py",
         "args": [
@@ -314,7 +313,14 @@
           "kit/tools/oapgen",
           "oap-sdk"
         ]
-      }
+      },
+      "requires": {
+        "idrive7-renderd": "2.1.15"
+      },
+      "mguHmi": [
+        "ID7",
+        "ID8"
+      ]
     },
     {
       "id": "edrive",
@@ -329,13 +335,6 @@
           "description": "真实纯电续航、实时电池功率、电芯与空调功率、高压电池健康度（SOH）与电量、上次充电与充电日志、12V 蓄电池（充电状态、电压、作用、能量回收、历史记录）以及主屏幕小部件；48V 轻混车型显示其 48V 电池与 DC/DC 变换器"
         }
       },
-      "mguHmi": [
-        "ID7"
-      ],
-      "requires": {
-        "idrive7-renderd": "2.1.7",
-        "mgu-inputgate": "1.0.0"
-      },
       "build": {
         "python": "kit/tools/build.py",
         "args": [
@@ -359,7 +358,14 @@
           "kit/tools/oapgen",
           "oap-sdk"
         ]
-      }
+      },
+      "requires": {
+        "idrive7-renderd": "2.1.15"
+      },
+      "mguHmi": [
+        "ID7",
+        "ID8"
+      ]
     },
     {
       "id": "gforce",
@@ -374,13 +380,6 @@
           "description": "附着力圆环与抓地上限包络，各方向峰值 G 值，并记录每次行程成绩"
         }
       },
-      "mguHmi": [
-        "ID7"
-      ],
-      "requires": {
-        "idrive7-renderd": "2.1.7",
-        "mgu-inputgate": "1.0.0"
-      },
       "build": {
         "python": "kit/tools/build.py",
         "args": [
@@ -404,7 +403,14 @@
           "kit/tools/oapgen",
           "oap-sdk"
         ]
-      }
+      },
+      "requires": {
+        "idrive7-renderd": "2.1.15"
+      },
+      "mguHmi": [
+        "ID7",
+        "ID8"
+      ]
     },
     {
       "id": "live_adjustments",
@@ -419,13 +425,6 @@
           "description": "BMW MGU ID7 的发动机配置。排气阀门：通过车辆自身诊断链路在 OEM/常开/常闭之间切换，或跟随驾驶模式（Sport 打开、Eco Pro 关闭）；会对抗 DME 的超时自动复位，超过设定转速后交还关闭状态。在设置中选定 BM3 或 MHD 后：可切换发动机 MAP、回火、ASD 与最大冷却。实验性功能：关闭 xDrive 直至下次点火循环（DSC LMV_FUNKTION），需在独立设置中开启"
         }
       },
-      "mguHmi": [
-        "ID7"
-      ],
-      "requires": {
-        "idrive7-renderd": "2.1.7",
-        "mgu-inputgate": "1.0.0"
-      },
       "build": {
         "python": "kit/tools/build.py",
         "args": [
@@ -449,7 +448,15 @@
           "kit/tools/oapgen",
           "oap-sdk"
         ]
-      }
+      },
+      "requires": {
+        "idrive7-renderd": "2.1.18",
+        "mgu-inputgate": "1.1.0"
+      },
+      "mguHmi": [
+        "ID7",
+        "ID8"
+      ]
     },
     {
       "id": "live_data",
@@ -464,13 +471,6 @@
           "description": "只读读取车辆及各控制单元的实时数值，含油费的行车电脑，以及你自定义的仪表页面，其中一页可作为主屏幕小部件"
         }
       },
-      "mguHmi": [
-        "ID7"
-      ],
-      "requires": {
-        "idrive7-renderd": "2.1.7",
-        "mgu-inputgate": "1.0.0"
-      },
       "build": {
         "python": "kit/tools/build.py",
         "args": [
@@ -494,7 +494,15 @@
           "kit/tools/oapgen",
           "oap-sdk"
         ]
-      }
+      },
+      "requires": {
+        "idrive7-renderd": "2.1.18",
+        "mgu-inputgate": "1.1.0"
+      },
+      "mguHmi": [
+        "ID7",
+        "ID8"
+      ]
     },
     {
       "id": "redline",
@@ -509,13 +517,6 @@
           "description": "全屏转速表：换挡提示灯、挡位显示、换挡评分与冷车转速保护；HUD 由 @biscotit 贡献"
         }
       },
-      "mguHmi": [
-        "ID7"
-      ],
-      "requires": {
-        "idrive7-renderd": "2.1.7",
-        "mgu-inputgate": "1.0.0"
-      },
       "build": {
         "python": "kit/tools/build.py",
         "args": [
@@ -539,7 +540,14 @@
           "kit/tools/oapgen",
           "oap-sdk"
         ]
-      }
+      },
+      "requires": {
+        "idrive7-renderd": "2.1.15"
+      },
+      "mguHmi": [
+        "ID7",
+        "ID8"
+      ]
     },
     {
       "id": "service",
@@ -554,13 +562,6 @@
           "description": "读取仪表中的保养需求：机油、制动器、制动液、车辆检查、年检——含里程、日期与详情；支持制动液与车辆检查复位"
         }
       },
-      "mguHmi": [
-        "ID7"
-      ],
-      "requires": {
-        "idrive7-renderd": "2.1.7",
-        "mgu-inputgate": "1.0.0"
-      },
       "build": {
         "python": "kit/tools/build.py",
         "args": [
@@ -584,7 +585,14 @@
           "kit/tools/oapgen",
           "oap-sdk"
         ]
-      }
+      },
+      "requires": {
+        "idrive7-renderd": "2.1.15"
+      },
+      "mguHmi": [
+        "ID7",
+        "ID8"
+      ]
     },
     {
       "id": "warmup",
@@ -599,13 +607,6 @@
           "description": "机油与冷却液暖机计算（预计就绪时间）、安全的转速上限与涡轮冷却计时"
         }
       },
-      "mguHmi": [
-        "ID7"
-      ],
-      "requires": {
-        "idrive7-renderd": "2.1.7",
-        "mgu-inputgate": "1.0.0"
-      },
       "build": {
         "python": "kit/tools/build.py",
         "args": [
@@ -629,7 +630,14 @@
           "kit/tools/oapgen",
           "oap-sdk"
         ]
-      }
+      },
+      "requires": {
+        "idrive7-renderd": "2.1.15"
+      },
+      "mguHmi": [
+        "ID7",
+        "ID8"
+      ]
     },
     {
       "id": "zf8hp",
@@ -644,13 +652,6 @@
           "description": "变速箱配置，实验性 ZF 8HP 监视器：实时数据、离合器充油自适应、换挡 MAP 与温度历史"
         }
       },
-      "mguHmi": [
-        "ID7"
-      ],
-      "requires": {
-        "idrive7-renderd": "2.1.7",
-        "mgu-inputgate": "1.0.0"
-      },
       "build": {
         "python": "kit/tools/build.py",
         "args": [
@@ -674,7 +675,15 @@
           "kit/tools/oapgen",
           "oap-sdk"
         ]
-      }
+      },
+      "requires": {
+        "idrive7-renderd": "2.1.18",
+        "mgu-inputgate": "1.1.0"
+      },
+      "mguHmi": [
+        "ID7",
+        "ID8"
+      ]
     }
   ],
   "tools": [
@@ -682,32 +691,26 @@
       "id": "idrive7-renderd",
       "path": "kit/renderd/prebuilt",
       "title": "GPU renderer",
-      "description": "The apps' own GPU renderer (mgu-render): draws them at 60 fps, beside the MGU Store's Renderer; installed with the apps",
+      "description": "The apps' own GPU renderer (mgu-render): draws them at 60 fps, beside the MGU Store's Renderer; installed with the apps (iDrive 7 and iDrive 8)",
       "mguHmi": [
-        "ID7"
+        "ID7",
+        "ID8"
       ]
     },
     {
       "id": "mgu-inputgate",
-      "path": "kit/renderd/prebuilt",
-      "version": "1.0.0",
+      "path": "kit/renderd/inputgate/tool",
       "title": "Controller gate",
-      "description": "Lets the apps have the iDrive controller (tabs, page buttons, settings, Doom); loads into the HMI at the next start",
+      "description": "Lets the apps have the iDrive controller (tabs, page buttons, settings, Doom); loads into the HMI at the next start (iDrive 7 and iDrive 8)",
       "needs": [
         "renderer"
       ],
       "optional": false,
+      "uninstallable": true,
       "mguHmi": [
-        "ID7"
-      ],
-      "preload": {
-        "library": "mgu-inputgate.so",
-        "unit": "hmi.service",
-        "process": "HmiMain3D",
-        "strikes": 2,
-        "checkAfterSeconds": 120,
-        "healthySeconds": 60
-      }
+        "ID7",
+        "ID8"
+      ]
     }
   ]
 }

@@ -110,15 +110,29 @@ def blocks(text):
 up_text = (new / 'kit/tools/localize.py').read_text(encoding='utf-8')
 our_text = (fork / 'kit/tools/localize.py').read_text(encoding='utf-8')
 up_blocks, our_blocks = blocks(up_text), blocks(our_text)
-patched = [n for n in our_blocks if n and n in up_blocks and our_blocks[n] != up_blocks[n]]
+# "ours" means: changed against the tree the fork was synced FROM (<old>), and carrying the
+# fork's zh-CN handling. A function upstream changed itself is not ours - the copy below takes
+# upstream's version (2026-11-16 changed unicode_resources() exactly that way, and comparing
+# against the new tree instead used to call it a fork patch and refuse the sync).
+base_text = (old / 'kit/tools/localize.py').read_text(encoding='utf-8') if old else up_text
+base_blocks = blocks(base_text)
+if not old:
+    print('note: no <old> baseline - a function the fork patches and upstream changed at the same')
+    print('      time cannot be told apart; give the previous upstream tree for the strict check')
 vanished = [n for n in our_blocks if n and n not in up_blocks]
-if not patched:
-    sys.exit('the fork patch is not in the working copy - refusing to sync blindly')
 if vanished:
     sys.exit(f'upstream no longer has {", ".join(vanished)}() - merge by hand')
+patched = [n for n in our_blocks
+           if n and n in base_blocks and our_blocks[n] != base_blocks[n] and 'zh-CN' in our_blocks[n]]
+theirs = [n for n in our_blocks
+          if n and n in base_blocks and our_blocks[n] != base_blocks[n] and 'zh-CN' not in our_blocks[n]]
+if not patched:
+    sys.exit('the fork patch is not in the working copy - refusing to sync blindly')
 for n in patched:
-    if 'zh-CN' not in our_blocks[n]:
-        sys.exit(f'the fork patch to {n}() does not look like ours - refusing to sync blindly')
+    if up_blocks[n] != base_blocks[n]:
+        sys.exit(f'upstream changed {n}(), which the fork patches - merge that function by hand')
+if theirs:
+    print('upstream changed, taken as is: ' + ', '.join(f'{n}()' for n in theirs))
 print('fork-patched functions: ' + ', '.join(f'{n}()' for n in patched))
 
 # 2. copy the new upstream tree over the fork; with <old> given, also drop the

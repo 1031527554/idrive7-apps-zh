@@ -21,6 +21,23 @@
   同时同步了 `redline` 的 `logview.js`/`shareshift.js`、`kit/runtime/*`、`mgu-repo.json`（renderer 工具去掉
   `provides` 字段）等；补充表补了 2 条新文案（"Another ambient app" 与那段警告），图集重烘为
   **966 字形**（+8，仍 44 号字、1024×1839）。**这批同样尚未上车验证。**
+- **2026-11-16 同步**（上游 21 新增 / 116 修改 / 0 删除）：上游给 `ambient_config` 加了**远光爆闪（strobe）**
+  与灯光秀、转向灯流光、开门红灯、双闪红灯等，版本 **2.0.5 → 2.5.0**（`strobe.js` 721 行 + main.js +246 行）；
+  `redline` 2.0.38 → 2.0.42，共 9 个应用涨版本。上游同时把**依赖声明从 `mgu-repo.json` 挪进了各
+  `apps/<id>/app.json`**（`requires`），并新增 `kit/renderd/inputgate/tool`（inputgate 成为独立可装工具）。
+  本 fork 的处理：
+  - 受保护目录**人工三方合并**（base=11-12、ours=fork、theirs=11-16）：`scenes.js`/`lights.js` 零冲突直取；
+    `app.json` 的版本冲突取上游 2.5.0；`control.js` 2 处、`main.js` 5 处逐处合并（保留我们的三种动画、
+    `live` 车辆值、中文改动；采纳上游的 strobe 接线与"先翻译再折行"，但**保留我们按字符折行的 `wrapText`**，
+    因为中文没有空格）。上游 2.5.0 自己也在 `warnOthers()` 里做了"先翻译"，与我们的思路一致。
+  - **修了一个同步新引入的回归（BLOCKER，由队友独立发现）**：`gen_mgu_repo.py` 原来给每个 component 写
+    `"requires": {}`，而 Store 的取值是 `entry[k] !== undefined ? entry[k] : app[k]`（`sources.js` 的 `pick()`）
+    ⇒ 空对象**遮蔽**了 app.json 里的依赖，从本源自建将**不再自动带上 `idrive7-renderd` 与 `mgu-inputgate`**
+    （失去 iDrive 控制器/GPU 渲染器）。现改为**合并上游块与各 app.json 的 `requires`，为空时不写该键**；
+    `mguHmi` 同理（不再钉成 `["ID7"]`，恢复 `["ID7","ID8"]`）。队友用 Store 自己的 `repoCatalog` 复现：
+    修复前 `NO`、修复后 `YES`（与上游 11-16 树逐条相同）。
+  - 补充表 210 → **304 键**（Strobe 页与新增设置项全部中文），图集重烘 **980 字形、1024×1882、仍 44 号字**。
+    **这批尚未上车验证。**
 
 ## 与上游的差异（只有这些）
 
@@ -128,6 +145,13 @@ python fork-tools/check_glyphs.py --atlas kit/runtime/fonts/cjk.json  # 必须 0
   Fault Scanner 绘制的文案，需要同样做一份 fork 版。
 - **同步后**：`sync_upstream.py` 在检测到上游改过 `zh-CN.json` 时会**打印重烘提示**（图集在 `keep.json` 里
   受保护，不会被覆盖，所以不会"悄悄过期"）。
+- **两个 fork-tools 的坑（2026-11-16 踩到并已修）**：
+  - `sync_upstream.py` 判定"哪些函数是我们的补丁"时，必须**以旧基线（第 3 个参数 `<old>`）为参照**。
+    曾用"与新上游不同的函数"来判定，于是上游自己改过的 `unicode_resources()` 被误认成我们的补丁而
+    **中止同步**（错误信息 "does not look like ours"）。现在：与旧基线不同 **且** 含 `zh-CN` 才算我们的补丁；
+    我们补丁的函数若上游也改了，会明确拒绝并提示人工合并（不会静默丢掉上游的改动）。
+  - `gen_mgu_repo.py` **不要写空的 `requires`/`mguHmi`**：Store 的 `pick()` 只判断 `!== undefined`，
+    空对象会遮蔽各 `app.json` 里的声明（后果见上文的 BLOCKER）。
 
 ## 版本号约定
 

@@ -8,8 +8,11 @@ each can carry its own Store-list texts) and builds Chinese on the unit:
 
 Titles come from upstream's own zh-CN catalog (kit/runtime/locales/zh-CN.json,
 untouched). Descriptions come from fork-tools/zh-CN-descriptions.json, which is
-this fork's own addition - see its _note. Nothing else is invented: build,
-requires, mguHmi and the tools come from the upstream mgu-repo.json.
+this fork's own addition - see its _note. Nothing else is invented: build comes
+from the upstream mgu-repo.json; requires and mguHmi are merged from it with each
+app's own app.json (upstream moved the dependencies there on 2026-11-16) and are
+left out when empty, so the Store reads the app's own declaration instead of an
+empty object of ours shadowing it.
 
     python fork-tools/gen_mgu_repo.py [<fork-dir>]
 """
@@ -34,8 +37,8 @@ def main():
     assert isinstance(apps_spec, dict), 'expected the upstream object form of "apps"'
     build = dict(apps_spec['build'])
     build['args'] = ['{id}', '--language', 'zh-CN']
-    requires = dict(apps_spec.get('requires') or {})
-    hmi = list(apps_spec.get('mguHmi') or ['ID7'])
+    base_requires = dict(apps_spec.get('requires') or {})
+    base_hmi = apps_spec.get('mguHmi')
 
     components, problems = [], []
     for d in sorted((root / 'apps').iterdir()):
@@ -47,7 +50,7 @@ def main():
         if not SEMVER.match(str(app.get('version', ''))):
             problems.append(f'{d.name}: version {app.get("version")!r} is not x.y.z')
         title = app.get('title') or d.name
-        components.append({
+        entry = {
             'id': d.name,
             'kind': 'app',
             'path': f'apps/{d.name}',
@@ -58,10 +61,21 @@ def main():
                 'title': zh.get(title, title),
                 'description': desc_zh.get(d.name) or app.get('description') or '',
             }},
-            'mguHmi': hmi,
-            'requires': requires,
             'build': build,
-        })
+        }
+        # Dependencies moved into each app.json upstream (2026-11-16). The Store reads them as
+        # `entry[k] !== undefined ? entry[k] : app[k]` (sources.js pick()), so writing our own
+        # empty object here SHADOWS the app's own declaration and the apps would install
+        # without idrive7-renderd / mgu-inputgate. Merge both, and only write a non-empty key.
+        requires = dict(base_requires)
+        requires.update(app.get('requires') or {})
+        if requires:
+            entry['requires'] = requires
+        # same for mguHmi: absent upstream's block, leave it to the app.json (ID7 and ID8)
+        hmi = base_hmi if base_hmi is not None else app.get('mguHmi')
+        if hmi:
+            entry['mguHmi'] = list(hmi)
+        components.append(entry)
 
     doc = {'schema': 1, 'components': components, 'tools': upstream.get('tools', [])}
     for k, v in upstream.items():
@@ -72,7 +86,9 @@ def main():
 
     print(f'mgu-repo.json written: {len(components)} app components, {len(doc["tools"])} tools')
     print(f'build.args = {build["args"]}   output = {build.get("output")}')
-    print(f'requires   = {requires}')
+    deps = sorted({k for c in components for k in (c.get('requires') or {})})
+    print(f'requires   = {deps if deps else "none written: each app.json declares its own"}')
+    print(f'mguHmi     = {sorted({h for c in components for h in (c.get("mguHmi") or [])}) or "not written: the app.json has it"}')
     missing = [c['id'] for c in components if not desc_zh.get(c['id'])]
     if missing:
         print('no fork description for: ' + ', '.join(missing))

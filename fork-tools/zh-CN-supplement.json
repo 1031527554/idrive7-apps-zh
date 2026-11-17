@@ -305,5 +305,11 @@
   "driver front": "左前",
   "driver rear": "左后",
   "passenger front": "右前",
-  "passenger rear": "右后"
+  "passenger rear": "右后",
+  "Sport will look": "运动模式观感",
+  "Comfort will look": "舒适模式观感",
+  "Eco Pro will look": "节能模式观感",
+  "Adaptive will look": "自适应模式观感",
+  "Hybrid will look": "混合动力模式观感",
+  "Electric will look": "纯电模式观感"
 }

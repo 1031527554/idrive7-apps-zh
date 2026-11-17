@@ -377,7 +377,7 @@ mgu.run({
                 if (m === cur) cv.roundRect(40, y - 6, 1520, 62, 10, withAlpha(t.accent, 0.14));
                 cv.text(MODE_NAMES[m], 60, y + 34, 28, t.text, { font: 'bold' });
                 const orig = control.modeOriginal(m);
-                if (ml) { cv.roundRect(250, y + 6, 38, 38, 9, ml.upper.rgb); cv.text(nearest(ml.upper.rgb) + (ml.kind !== 'solid' ? ', ' + S.NAMES[ml.kind] : ''), 304, y + 33, 22, t.text); }
+                if (ml) { cv.roundRect(250, y + 6, 38, 38, 9, ml.upper.rgb); cv.text(tr(nearest(ml.upper.rgb)) + (ml.kind !== 'solid' ? ', ' + tr(S.NAMES[ml.kind]) : ''), 304, y + 33, 22, t.text, { literal: true }); }
                 else cv.text(orig ? 'BMW\'s original colour' : 'The Colour tab\'s colour', 250, y + 33, 22, t.dim);
                 // any colour: the Colour and Animations tabs change this mode's look
                 G.button(cv, t, 760, y + 1, 250, 48, 'Choose colour', () => { editing = m; page = 0; return redraw(); }, { primary: !!ml, key: m + '-any' });

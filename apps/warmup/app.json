@@ -2,13 +2,18 @@
   "id": "warmup",
   "title": "Warm-Up",
   "description": "Oil and coolant warm-up calculator (time to ready), safe rev limit, turbo cool-down and a cold start counter",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "vendor": "custom",
   "loggingId": "OA9A",
   "iconGlyph": "temp",
   "autostart": true,
-  "mguHmi": ["ID7", "ID8"],
-  "requires": { "idrive7-renderd": "2.1.15" },
+  "mguHmi": [
+    "ID7",
+    "ID8"
+  ],
+  "requires": {
+    "idrive7-renderd": "2.1.15"
+  },
   "signals": {
     "de.bmw.infotainment.vehicle.CDS": {
       "statusEngineSpeed2": "rs",
@@ -27,8 +32,12 @@
     },
     "com.harman.infotainment.systemfunctions.tasu.tasu.InternalTasu": {
       "_instances": "SystemFunctionsInternalTasuInst1",
-      "_methods": ["sendTasuRequest"],
-      "_broadcasts": ["sendTasuResponse"]
+      "_methods": [
+        "sendTasuRequest"
+      ],
+      "_broadcasts": [
+        "sendTasuResponse"
+      ]
     }
   },
   "screens": [
@@ -51,7 +60,13 @@
       "type": "number",
       "unit": "°C",
       "unitBy": "tempUnit",
-      "units": { "f": { "unit": "°F", "mul": 1.8, "add": 32 } },
+      "units": {
+        "f": {
+          "unit": "°F",
+          "mul": 1.8,
+          "add": 32
+        }
+      },
       "default": 80,
       "steps": [
         60,
@@ -69,7 +84,13 @@
       "type": "number",
       "unit": "°C",
       "unitBy": "tempUnit",
-      "units": { "f": { "unit": "°F", "mul": 1.8, "add": 32 } },
+      "units": {
+        "f": {
+          "unit": "°F",
+          "mul": 1.8,
+          "add": 32
+        }
+      },
       "default": 80,
       "steps": [
         60,
@@ -86,9 +107,21 @@
       "type": "number",
       "unit": "°C",
       "unitBy": "tempUnit",
-      "units": { "f": { "unit": "°F", "mul": 1.8, "add": 32 } },
+      "units": {
+        "f": {
+          "unit": "°F",
+          "mul": 1.8,
+          "add": 32
+        }
+      },
       "default": 60,
-      "steps": [40, 50, 60, 70, 80]
+      "steps": [
+        40,
+        50,
+        60,
+        70,
+        80
+      ]
     },
     {
       "key": "engine",
@@ -96,9 +129,18 @@
       "type": "choice",
       "default": "auto",
       "options": [
-        ["auto", "Auto (from the car)"],
-        ["diesel", "Diesel"],
-        ["petrol", "Petrol"]
+        [
+          "auto",
+          "Auto (from the car)"
+        ],
+        [
+          "diesel",
+          "Diesel"
+        ],
+        [
+          "petrol",
+          "Petrol"
+        ]
       ]
     },
     {
@@ -107,7 +149,9 @@
       "type": "number",
       "unit": "rpm",
       "default": 0,
-      "labels": {"0": "Auto"},
+      "labels": {
+        "0": "Auto"
+      },
       "reset": 1,
       "steps": [
         0,
@@ -127,7 +171,9 @@
       "type": "number",
       "unit": "rpm",
       "default": 0,
-      "labels": {"0": "Auto"},
+      "labels": {
+        "0": "Auto"
+      },
       "reset": 1,
       "steps": [
         0,
@@ -195,10 +241,38 @@
         ]
       ]
     },
-    {"key": "layout", "label": "Screen layout", "type": "choice", "default": "full",
-     "options": [["full", "Full screen"], ["standard", "Standard"]]},
-    {"key": "renderer", "label": "Renderer", "type": "choice", "default": "auto",
-     "options": [["auto", "GPU 60 fps (default)"], ["software", "Software"]]},
+    {
+      "key": "layout",
+      "label": "Screen layout",
+      "type": "choice",
+      "default": "full",
+      "options": [
+        [
+          "full",
+          "Full screen"
+        ],
+        [
+          "standard",
+          "Standard"
+        ]
+      ]
+    },
+    {
+      "key": "renderer",
+      "label": "Renderer",
+      "type": "choice",
+      "default": "auto",
+      "options": [
+        [
+          "auto",
+          "GPU 60 fps (default)"
+        ],
+        [
+          "software",
+          "Software"
+        ]
+      ]
+    },
     {
       "key": "demo",
       "label": "Demo data",

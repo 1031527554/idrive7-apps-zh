@@ -2,13 +2,18 @@
   "id": "edrive",
   "title": "eDrive",
   "description": "Real electric range (plug-in hybrids and fully electric cars such as the iX3), live battery power, cells and climate power, HV battery health (SOH) and energy, last charge, charge log, the 12 V battery (charge, voltage, what it does, regen, history) and a home-screen widget; on a 48 V mild hybrid its 48 V battery and DC/DC converter",
-  "version": "2.11.0",
+  "version": "2.11.1",
   "autostart": true,
   "vendor": "custom",
   "loggingId": "OA9C",
   "iconGlyph": "battery",
-  "mguHmi": ["ID7", "ID8"],
-  "requires": { "idrive7-renderd": "2.1.15" },
+  "mguHmi": [
+    "ID7",
+    "ID8"
+  ],
+  "requires": {
+    "idrive7-renderd": "2.1.15"
+  },
   "signals": {
     "com.harman.infotainment.systemfunctions.tasu.tasu.InternalTasu": {
       "_instances": "SystemFunctionsInternalTasuInst1",
@@ -124,7 +129,12 @@
   "settings": [
     {
       "key": "range20",
-      "when": { "hybrid": ["auto", "yes"] },
+      "when": {
+        "hybrid": [
+          "auto",
+          "yes"
+        ]
+      },
       "label": "Electric range when full, 20 °C",
       "type": "number",
       "unit": "km",
@@ -146,7 +156,12 @@
     },
     {
       "key": "reserve",
-      "when": { "hybrid": ["auto", "yes"] },
+      "when": {
+        "hybrid": [
+          "auto",
+          "yes"
+        ]
+      },
       "label": "Engine starts at",
       "type": "choice",
       "default": "auto",
@@ -227,7 +242,12 @@
     },
     {
       "key": "designKwh",
-      "when": { "hybrid": ["auto", "yes"] },
+      "when": {
+        "hybrid": [
+          "auto",
+          "yes"
+        ]
+      },
       "label": "Battery size when new (gross)",
       "type": "number",
       "unit": "kWh",
@@ -248,7 +268,12 @@
     },
     {
       "key": "designKwhBev",
-      "when": { "hybrid": ["auto", "bev"] },
+      "when": {
+        "hybrid": [
+          "auto",
+          "bev"
+        ]
+      },
       "label": "Fully electric: usable battery when new",
       "type": "number",
       "unit": "kWh",
@@ -271,7 +296,12 @@
     },
     {
       "key": "bevReserve",
-      "when": { "hybrid": ["auto", "bev"] },
+      "when": {
+        "hybrid": [
+          "auto",
+          "bev"
+        ]
+      },
       "label": "Fully electric: range counts down to",
       "type": "choice",
       "default": "0",
@@ -300,7 +330,13 @@
     },
     {
       "key": "price",
-      "when": { "hybrid": ["auto", "yes", "bev"] },
+      "when": {
+        "hybrid": [
+          "auto",
+          "yes",
+          "bev"
+        ]
+      },
       "label": "Electricity price",
       "type": "number",
       "unit": "EUR/kWh",
@@ -470,8 +506,14 @@
       "type": "choice",
       "default": "fast",
       "options": [
-        ["fast", "Fast (the car's eDRIVE needle)"],
-        ["readings", "Battery readings only"]
+        [
+          "fast",
+          "Fast (the car's eDRIVE needle)"
+        ],
+        [
+          "readings",
+          "Battery readings only"
+        ]
       ]
     },
     {

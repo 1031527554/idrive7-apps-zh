@@ -309,6 +309,7 @@ mgu.run({
                 ['fade', 'Upper colour to lower colour and back'], ['wave', 'Colour rolling from side to side'],
                 ['cycle', 'Walks through the palette, on and on'], ['beat', 'A beat at the beats a minute below'],
                 ['drive', 'Revs, speed or g give it as the car is driven']];
+            let picked = '';
             kinds.forEach(([k, d], i) => {
                 const x = 44 + (i % 2) * 310, y = 86 + Math.floor(i / 2) * 52, on = isOn() && l.kind === k;
                 G.button(cv, t, x, y, 290, 44, S.NAMES[k], () => { setLook({ kind: k }); return redraw(); }, { primary: on, key: 'k-' + k });

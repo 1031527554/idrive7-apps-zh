@@ -145,13 +145,24 @@ python fork-tools/check_glyphs.py --atlas kit/runtime/fonts/cjk.json  # 必须 0
   Fault Scanner 绘制的文案，需要同样做一份 fork 版。
 - **同步后**：`sync_upstream.py` 在检测到上游改过 `zh-CN.json` 时会**打印重烘提示**（图集在 `keep.json` 里
   受保护，不会被覆盖，所以不会"悄悄过期"）。
-- **两个 fork-tools 的坑（2026-11-16 踩到并已修）**：
-  - `sync_upstream.py` 判定"哪些函数是我们的补丁"时，必须**以旧基线（第 3 个参数 `<old>`）为参照**。
+- **两个 fork-tools 的坑（2026-11-16 踩到并已修）**：  - `sync_upstream.py` 判定"哪些函数是我们的补丁"时，必须**以旧基线（第 3 个参数 `<old>`）为参照**。
     曾用"与新上游不同的函数"来判定，于是上游自己改过的 `unicode_resources()` 被误认成我们的补丁而
     **中止同步**（错误信息 "does not look like ours"）。现在：与旧基线不同 **且** 含 `zh-CN` 才算我们的补丁；
     我们补丁的函数若上游也改了，会明确拒绝并提示人工合并（不会静默丢掉上游的改动）。
   - `gen_mgu_repo.py` **不要写空的 `requires`/`mguHmi`**：Store 的 `pick()` 只判断 `!== undefined`，
     空对象会遮蔽各 `app.json` 里的声明（后果见上文的 BLOCKER）。
+- **合并冲突时的纪律（2026-11-16 的教训，务必遵守）**：三方合并的冲突块里，**一方的整段可能包含必须保留的
+  声明**（当时是 `let picked = '';`）。手动消解时只取数组/片段、丢掉那行声明，`node --check` 与所有逻辑测试
+  **都发现不了**——要等真正渲染那一页才炸，车上的表现是"**画面正常但整个页面点不动**"
+  （渲染循环抛异常 → 应用停止响应）。所以**凡改过 `apps/ambient_config/` 的绘制代码，必须跑**：
+
+  ```powershell
+  python kit/tools/build.py --language zh-CN --preview-only ambient_config
+  node kit/tools/test_ambient_pages.js         # 逐页真渲染 + 模拟标签/点击，13 项
+  ```
+
+  `--preview-only` **不需要 SDK donor**，电脑上随时可跑；`test_ambient_pages.js` 会用 `kit/tools/hu-stub.js`
+  把构建产物真正跑起来逐页绘制，专门抓这类"只在渲染时才报的作用域/API 错误"。
 
 ## 版本号约定
 

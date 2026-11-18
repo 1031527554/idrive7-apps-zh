@@ -6,14 +6,8 @@
   "vendor": "custom",
   "loggingId": "OA9D",
   "iconGlyph": "gauge",
-  "mguHmi": [
-    "ID7",
-    "ID8"
-  ],
-  "requires": {
-    "idrive7-renderd": "2.1.18",
-    "mgu-inputgate": "1.1.0"
-  },
+  "mguHmi": ["ID7", "ID8"],
+  "requires": { "idrive7-renderd": "2.1.18", "mgu-inputgate": "1.1.0" },
   "signals": {
     "de.bmw.infotainment.vehicle.Vehicle": {
       "_optional": "the car's pressure unit: boost and tyre pressures come in it",
@@ -244,9 +238,7 @@
         8,
         12
       ],
-      "when": {
-        "advanced": true
-      }
+      "when": {"advanced": true}
     },
     {
       "key": "trips",
@@ -332,12 +324,7 @@
       "type": "bool",
       "default": false
     },
-    {
-      "key": "advanced",
-      "label": "Advanced settings",
-      "type": "bool",
-      "default": false
-    },
+    {"key": "advanced", "label": "Advanced settings", "type": "bool", "default": false},
     {
       "key": "theme",
       "label": "Colour theme",

@@ -38,6 +38,23 @@
     修复前 `NO`、修复后 `YES`（与上游 11-16 树逐条相同）。
   - 补充表 210 → **304 键**（Strobe 页与新增设置项全部中文），图集重烘 **980 字形、1024×1882、仍 44 号字**。
     **这批尚未上车验证。**
+- **2026-11-18 同步**（上游 20 新增 / 2 删除 / 78 修改）：**15 个应用全部涨版本**，`ambient_config 2.5.0 → 2.7.6`
+  （新增**拨杆启动爆闪** `lever.js`、`lightsKnown` 记忆上次找到的灯、以及**更硬的 Comfort 冲突提示**：
+  改为一句话说明"本应用已停止改灯"并**用红色显示**）；新增 `kit/runtime/{qr,qrlog,twin_dme}.js`
+  （二维码日志）与 `apps/{draggy/wheelspin,edrive/linkqueue,warmup/coldstarts}.js`、
+  `apps/redline/{electrical,fuel,knock}.js` 等。本 fork 的处理：
+  - **app.json 这次改为语义合并**：上游 2.7.6 为基（含新设置 `strobeLever`/`strobeLeverDriving`/`doorCar`
+    与新信号 `statusLightStatus`/`vehicleConditionNoCrc`），补回本 fork 的 `CDS`/`CDS2` 信号
+    （随驾驶变化用）与上游已删但 `kit/car.js` 仍在读的 `demo` 设置。
+    **原因**：文本三方合并会在 `Vehicle2` 处产生**重复键**（两侧位置不同）——改用 JSON 合并避免。
+  - `main.js` 三处冲突：保留我们的 CJK 感知 `wrapText`、`live` 车辆值与"先翻译再折行"，
+    采纳上游的新提示文案、宽度自适应的标题与红色配色、以及 `lights.js` 的 `known` 参数；
+    `control.js`/`lights.js`/`lin.js`/`scenes.js`/`others.js` **零冲突**直取；`lever.js` 为新文件。
+  - **再次复用"真渲染"验证**（见下条纪律）：`build.py --preview-only` + `test_ambient_pages.js` **13/0**，
+    确认这次没有再丢声明。
+  - 汉化：补充表 304 → **316 键**（新提示两种长度、拨杆三个设置项、拨杆开关状态），
+    **删掉被上游改写的旧警告键**（避免死键）；图集重烘 **977 字形、1024×1882、仍 44 号字**；
+    i18n 仿真 **184 条 0 英文**。**这批尚未上车验证。**
 
 ## 与上游的差异（只有这些）
 

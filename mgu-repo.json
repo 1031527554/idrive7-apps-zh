@@ -328,7 +328,7 @@
       "path": "apps/edrive",
       "manifest": "app.json",
       "title": "eDrive",
-      "description": "Real electric range, live battery power, cells and climate power, HV battery health (SOH) and energy, last charge, charge log, the 12 V battery (charge, voltage, what it does, regen, history) and a home-screen widget; on a 48 V mild hybrid its 48 V battery and DC/DC converter",
+      "description": "Real electric range (plug-in hybrids and fully electric cars such as the iX3), live battery power, cells and climate power, HV battery health (SOH) and energy, last charge, charge log, the 12 V battery (charge, voltage, what it does, regen, history) and a home-screen widget; on a 48 V mild hybrid its 48 V battery and DC/DC converter",
       "texts": {
         "zh-CN": {
           "title": "EDrive助手",
@@ -600,7 +600,7 @@
       "path": "apps/warmup",
       "manifest": "app.json",
       "title": "Warm-Up",
-      "description": "Oil and coolant warm-up calculator (time to ready), safe rev limit and turbo cool-down",
+      "description": "Oil and coolant warm-up calculator (time to ready), safe rev limit, turbo cool-down and a cold start counter",
       "texts": {
         "zh-CN": {
           "title": "暖机助手",

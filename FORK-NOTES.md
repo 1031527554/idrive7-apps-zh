@@ -139,16 +139,28 @@
 
 | 症状 | 原因 | 本 fork 的做法 |
 |---|---|---|
-| 还是英文 | 该字符串不在 `kit/runtime/locales/zh-CN.json` 里，而 kit 的运行时翻译只查这份词典 | 译文进 `fork-tools/zh-CN-supplement.json`，构建时由 `localize.load_locale()` 合并（**上游条目优先**） |
+| 还是英文 | 该字符串不在 `kit/runtime/locales/zh-CN.json` 里，而 kit 的运行时翻译只查这份词典 | 译文先进 `fork-tools/zh-CN-supplement.json`（**源**），再由 `fork-tools/merge_supplement.py` **并进 `kit/runtime/locales/zh-CN.json`**（上游条目优先）——**构建只读这份语料**。只把译文放在 fork 独有的文件里**不够**：车机构建时可能读不到它（2026-11-19 的整页英文就是这么来的） |
 | `?` 方框 | canvas 文字用预烘**字形图集** `kit/runtime/fonts/cjk.json` 绘制，缺字回退成 `?`（`kit/runtime/fonts.js:47` → `glyphs[63]`）。上游烘焙脚本 `kit/tools/bake_cjk.py` **只烘 `zh-CN.json` 里的字**，本 fork 补充表的字没有字形 | 用 `fork-tools/bake_cjk_fork.py` 把**上游语料 + 补充表**一起烘焙；产物 `cjk.json` 已列入 `keep.json` |
 
-**维护规则（重要）**：只要**改了补充表**，或**同步后上游改了 `zh-CN.json`**，就必须重新烘焙：
+**维护规则（重要）**：只要**改了补充表**，或**同步后上游改了 `zh-CN.json`**，就必须走完这套（同步脚本已把前两步自动化）：
 
 ```powershell
+python fork-tools/merge_supplement.py                                 # 补充表 → 语料（同步时自动执行）
 python fork-tools/bake_cjk_fork.py                                    # 烘到 fork-tools/out/cjk.json
 copy fork-tools\out\cjk.json kit\runtime\fonts\cjk.json
 python fork-tools/check_glyphs.py --atlas kit/runtime/fonts/cjk.json  # 必须 0 缺字
+python <research>/check_supplement.py .                               # 必须 0 dead、0 not merged
 ```
+
+**三份文件的分工**（别再搞混）：
+
+| 文件 | 角色 | 车机构建会读吗 |
+|---|---|---|
+| `fork-tools/zh-CN-upstream.json` | 上游语料快照（同步时刷新，`merge_supplement.py` 的输入） | 否（本地工具用） |
+| `fork-tools/zh-CN-supplement.json` | 本 fork 的译文**源** | **不可依赖**（车机是否拿到它曾出过问题） |
+| `kit/runtime/locales/zh-CN.json` | **合并结果**，构建真正读的那份（已列入 `keep.json` 保护） | **是** ✓ |
+
+**改了译文就要涨版本**：词典是打进每个应用包的，不涨版本车机不会重建、新译文到不了车。
 
 预算：图集高度上限 **2048 px**，超出会自动降字号（48→44→40→36→32），那会让**所有应用**的中文一起变小。当前 1839 px（44 号字），余量约 200 px ≈ 100 个字形。
 

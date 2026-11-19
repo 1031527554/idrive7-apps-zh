@@ -275,3 +275,11 @@ if catalog_changed():
     print('        python fork-tools/bake_cjk_fork.py')
     print('        copy fork-tools\\out\\cjk.json kit\\runtime\\fonts\\cjk.json')
     print('        python fork-tools/check_glyphs.py --atlas kit/runtime/fonts/cjk.json   (must be 0 missing)')
+
+# 8. the catalog the unit's build reads is this fork's own file: upstream's entries merged with
+#    fork-tools/zh-CN-supplement.json (merge_supplement.py). Keep the upstream copy the merge reads
+#    from current and re-merge: a fork-only supplement file is not something the build on the unit
+#    can be relied on to use - on 2026-11-19 an app built there came out with upstream's catalog
+#    only, so every key the supplement carries stayed English.
+(fork / 'fork-tools/zh-CN-upstream.json').write_bytes((new / CATALOG).read_bytes())
+subprocess.run([sys.executable, str(fork / 'fork-tools/merge_supplement.py'), str(fork)], check=True)

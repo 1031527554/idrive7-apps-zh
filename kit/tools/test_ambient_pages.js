@@ -32,10 +32,13 @@ const hu = headUnit(STAGE, {
 process.on('unhandledRejection', (e) => errors.push('unhandled: ' + (e && e.message || e)));
 process.on('uncaughtException', (e) => errors.push('uncaught: ' + (e && e.message || e)));
 
-const tabs = [], taps = [];
-const ctx = hu.ctx, onTab0 = ctx.onTab, onTap0 = ctx.onTap;
+const tabs = [], taps = [], touches = [];
+const ctx = hu.ctx, onTab0 = ctx.onTab, onTap0 = ctx.onTap, onTouch0 = ctx.onTouch;
 ctx.onTab = (fn) => { tabs.push(fn); return onTab0.call(ctx, fn); };
 ctx.onTap = (fn) => { taps.push(fn); return onTap0.call(ctx, fn); };
+// upstream 11-20 draws the ring and the dial from phased touches where the kit offers them, and only
+// falls back to a plain tap otherwise: capture both and drive whichever the app took
+ctx.onTouch = (fn) => { touches.push(fn); return onTouch0 ? onTouch0.call(ctx, fn) : undefined; };
 
 const draw = (what, fn) => {
     try { fn(); checks++; } catch (e) { checks++; fails++; console.log('FAIL ' + what + ': ' + (e && e.message || e)); }
@@ -47,9 +50,15 @@ const draw = (what, fn) => {
     // the app takes the tabs at once (a temporary handler while its background comes up) and registers
     // the real one when it is ready: the kit's onTab replaces, so the last one is the live handler
     ok(tabs.length >= 1, 'the app registered a tab handler');
-    ok(taps.length >= 1, 'the app registered a tap handler');
+    ok(taps.length + touches.length >= 1, 'the app registered a tap or touch handler');
     ok(images.length >= 2, 'a frame before the background (the loading screen) and the pages after');
-    const tabFn = tabs[tabs.length - 1], tapFn = taps[taps.length - 1];
+    const tabFn = tabs[tabs.length - 1];
+    const tapFn = taps.length ? taps[taps.length - 1] : null;
+    const touchFn = touches.length ? touches[touches.length - 1] : null;
+    const press = (x, y) => {
+        if (touchFn) { touchFn(1, x, y); touchFn(3, x, y); }     // down then up, as the kit sends them
+        else if (tapFn) tapFn(x, y);
+    };
 
     for (let page = 0; page <= 4; page++) {
         draw('page ' + page + ' draws', () => { tabFn(page); hu.loopFn(); });
@@ -57,7 +66,7 @@ const draw = (what, fn) => {
     }
     for (const [x, y, what] of [[800, 260, 'the colour ring'], [1300, 200, 'a swatch'], [200, 400, 'the dial'],
                                 [300, 100, 'the animation buttons'], [1000, 300, 'the page']]) {
-        draw('tap ' + what, () => { tapFn(x, y); hu.loopFn(); });
+        draw('tap ' + what, () => { press(x, y); hu.loopFn(); });
         await sleep(60);
     }
     await sleep(400);                                  // let the async renders finish

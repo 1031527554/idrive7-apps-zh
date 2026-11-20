@@ -46,3 +46,23 @@ node kit/tools/test_ambient_rgb.js       # 上游：LIN/写帧/场景（53 项�
 - 但会**报告上游对本目录的改动**（新增/修改/删除），需要人工合并
 
 所以上游若更新了这个应用，请按 `sync_upstream.py` 的输出手工合并，重点是 `scenes.js`（新增动画）与 `main.js`（Animations 页布局）。
+
+## 首次进入要自己先画一帧（2026-11-20）
+
+车主反馈：**第一次**打开这个应用时画面像"卡住"、缩放/比例不对、点哪里都没反应；**退出再进就正常**。
+
+原因在启动顺序，不是应用坏了：
+
+- `start(ctx)` 第一件事是 `await background(ctx)`，而 `background()` 要**开诊断会话**（`Diag.init()`）并**搜灯**
+  （`Ambient.start()` / `lights.find()`）——车机上每个 UDS 请求约 200 ms，累计是"几秒"量级；
+- 在应用画出第一帧之前，HMI 的框里还是它自己的**页面滑入/放大动画状态**
+  （`display.js` 注释原文：*the HMI zooms / slides its page in … the picture shows once the page stands
+  where it ends, not shifted and too big for a moment*）→ 看起来就是"比例不对 + 不动"；
+- 而 `ctx.onTab` / `ctx.onTap` 是在 `await` **之后**才注册的 → 这段时间点击无人接收；
+- 退出再进时 kit 已缓存 `ctx.background` → 立刻出帧 → 一切正常（所以"只有第一次"）。
+
+修法（`main.js`）：`start()` 一进来**先画一帧并交给 HMI**（标题 + `Starting...`），并**先注册一个临时
+`ctx.onTab`** 记住被按下的标签页；后台就绪后再注册真正的处理器（kit 的 `onTab` 是覆盖语义），并把记住的
+那一页应用上去。于是首屏立刻有内容、比例正确、启动期间的点击也不会丢。
+
+测试：`kit/tools/test_ambient_pages.js` 现在断言"**后台之前已经呈现过一帧**"（撤掉这段修复该断言即失败）。

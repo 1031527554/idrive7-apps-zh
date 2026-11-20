@@ -23,10 +23,10 @@ if (!fs.existsSync(path.join(STAGE, 'source', 'javascript', 'app.js'))) {
     process.exit(2);
 }
 
-const errors = [];
+const errors = [], images = [];
 const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ambient-pages-'));
 const hu = headUnit(STAGE, {
-    dataDir, fresh: true, image: () => {},
+    dataDir, fresh: true, image: (name) => { images.push(name); },
     log: { info: () => {}, warn: (m) => errors.push(String(m)), error: (m) => errors.push(String(m)), debug: () => {} },
 });
 process.on('unhandledRejection', (e) => errors.push('unhandled: ' + (e && e.message || e)));
@@ -44,16 +44,20 @@ const draw = (what, fn) => {
 (async () => {
     try { hu.start(); } catch (e) { ok(false, 'the app loads: ' + e.message); }
     await sleep(1500);                                 // the app's own async start()
-    ok(tabs.length === 1, 'the app registered a tab handler');
-    ok(taps.length === 1, 'the app registered a tap handler');
+    // the app takes the tabs at once (a temporary handler while its background comes up) and registers
+    // the real one when it is ready: the kit's onTab replaces, so the last one is the live handler
+    ok(tabs.length >= 1, 'the app registered a tab handler');
+    ok(taps.length >= 1, 'the app registered a tap handler');
+    ok(images.length >= 2, 'a frame before the background (the loading screen) and the pages after');
+    const tabFn = tabs[tabs.length - 1], tapFn = taps[taps.length - 1];
 
     for (let page = 0; page <= 4; page++) {
-        draw('page ' + page + ' draws', () => { tabs.forEach((f) => f(page)); hu.loopFn(); });
+        draw('page ' + page + ' draws', () => { tabFn(page); hu.loopFn(); });
         await sleep(80);
     }
     for (const [x, y, what] of [[800, 260, 'the colour ring'], [1300, 200, 'a swatch'], [200, 400, 'the dial'],
                                 [300, 100, 'the animation buttons'], [1000, 300, 'the page']]) {
-        draw('tap ' + what, () => { taps.forEach((f) => f(x, y)); hu.loopFn(); });
+        draw('tap ' + what, () => { tapFn(x, y); hu.loopFn(); });
         await sleep(60);
     }
     await sleep(400);                                  // let the async renders finish

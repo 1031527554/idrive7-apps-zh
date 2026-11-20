@@ -234,6 +234,17 @@ mgu.run({
     background,
     async start(ctx) {
         const { ui, settings, log } = ctx;
+        // The background opens the diagnostic session and searches for the lights: on the car that takes a
+        // moment, and until the app has drawn once the HMI's box still shows its own page-in state - shifted
+        // and too big - and answers nothing, because the tab and tap handlers are registered further down.
+        // So the screen is painted and the tabs are taken at once; a tab pressed meanwhile is remembered and
+        // applied when the look is there.
+        const theme0 = ctx.theme(), loading = ctx.canvas(W, H).clear(theme0.bg);
+        loading.text('Ambient config', 44, 96, 30, theme0.text, { font: 'bold' });
+        loading.text('Starting...', 44, 140, 20, theme0.dim);
+        await Promise.resolve(ui.image('MAIN_GFX', loading)).catch(() => {});
+        let pendingTab = 0;
+        ctx.onTab((i) => { pendingTab = i; return null; });      // replaced by the real handler below
         const { ambient, lights, control, live, active, others, strobe, checks } = ctx.background || await background(ctx);
         // the Strobe tab only with its experimental setting on
         const tabs = () => TABS.concat(settings.get('strobe') === true ? ['Strobe'] : []);
@@ -662,6 +673,8 @@ mgu.run({
             });
         }
         ctx.onTab((i) => { page = i; if (i >= 2) editing = null; if (i === 4) strobeSeen = Date.now(); pauseCheck(); return redraw(); });
+        // a tab pressed while the background was still coming up is honoured now
+        if (pendingTab) { page = pendingTab; if (pendingTab >= 2) editing = null; }
         lights.on('change', () => { dirty = true; });
         ambient.on('change', () => { dirty = true; });
         others.on('change', () => { dirty = true; });

@@ -482,5 +482,17 @@
   "answer": "个应答",
   "since": "自",
   "IterioDev's Comfort tool has its ambient colour on and changes the same lights, so Ambient config has stopped changing them. Turn its colour and its drive-mode colours off in IterioDev's Ambient Light app (the seats keep working), or uninstall Comfort in the Store (Installed, Head-unit tools, Comfort).": "IterioDev 的 Comfort 工具开着氛围灯并写入同一组灯，因此本应用已停止改灯。请在 IterioDev 的 Ambient Light 应用里关掉它的颜色与各驾驶模式颜色（座椅功能不受影响），或在商店的「已安装 → 车机工具」里卸载 Comfort。",
-  "Open door: the car's own warning (G20 / G26)": "开门：用车辆自身的警告（G20 / G26）"
+  "Open door: the car's own warning (G20 / G26)": "开门：用车辆自身的警告（G20 / G26）",
+  "Now on the DME": "当前 DME 上",
+  "Experimental": "实验性",
+  "xDrive on restores it, or an ignition cycle": "开启 xDrive 即可恢复，或等一次点火循环",
+  "xDrive returns when the ignition is switched off": "点火关闭后 xDrive 会恢复",
+  "Read only · wheel slip compared between the wheels, above 5 km/h": "只读 · 对比车轮间打滑（5 km/h 以上）",
+  "Last": "最近",
+  "Set the fuel price": "设置油价",
+  "trip": "行程",
+  "trips": "行程",
+  "control units (ignition on)": "控制单元（点火开启）",
+  "fuel signal has learned its scaling": "油耗信号已学习标度",
+  "Hotter than 500 °C before the filter: keep driving": "过滤器前温度高于 500 °C：请继续行驶"
 }
